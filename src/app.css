@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+/* Light blue theme */
+:root {
+  --bg-primary: #edf3fd;
+  --bg-secondary: #dbe7fb;   /* more blue */
+  --bg-tertiary: #d2e1f8;
+
+  --border-color: #b6ccf0;
+  --border-color-hover: #92b4ea;
+
+  --text-primary: #1d2a3f;
+  --text-secondary: #3f5f8f;
+  --text-tertiary: #6c8fc2;
+
+  --input-bg: #e6effc;
+  --input-border: #b6ccf0;
+
+  --shadow-sm: rgba(30, 70, 140, 0.06);
+  --shadow-md: rgba(30, 70, 140, 0.12);
+  --shadow-lg: rgba(30, 70, 140, 0.18);
+}
+
+/* Dark blue theme */
+.dark {
+  --bg-primary: #0b1624;     /* deep navy */
+  --bg-secondary: #0f1e32;
+  --bg-tertiary: #152a44;
+
+  --border-color: #1f3a5c;
+  --border-color-hover: #2d507d;
+
+  --text-primary: #e4ecf7;
+  --text-secondary: #b3c4db;
+  --text-tertiary: #7f97b4;
+
+  --input-bg: #0f1e32;
+  --input-border: #1f3a5c;
+
+  --shadow-sm: rgba(0, 0, 0, 0.45);
+  --shadow-md: rgba(0, 0, 0, 0.6);
+  --shadow-lg: rgba(0, 0, 0, 0.75);
+}
+
+/* Global application */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Inter Tight", system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

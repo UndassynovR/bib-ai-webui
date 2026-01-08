@@ -1,0 +1,40 @@
+000 ^0 record_marker text
+001 ^\ source_link text
+    ^0 control_number text
+005 ^0 date_of_correction text
+008 ^0 encoded_data text
+013 ^b country_code text
+020 ^a isbn text
+040 ^d database_section text
+041 ^a text_language_code text
+080 ^a udc_index text
+090 ^a shelf_index text
+    ^c catalogue_index text
+    ^f storage_sigla text
+    ^x authors_sign text
+097 ^b operator text
+100 ^a author text
+245 ^a title text
+    ^b title_continuation text
+    ^h physical_media text
+    ^z type_content_access text
+260 ^a publication_place text
+    ^b publisher text
+    ^c year number(there can be some text, leave only number)
+300 ^a volume number (there can be some text, leave only number)
+440 ^a batch text
+541 ^n quantity number (there can be some text, leave only number)
+653 ^a keywords text (there can be multiple)
+700 ^a other_authors text
+856 ^d cover_link text
+901 ^t document_type text
+952 ^a literature_type_ksu_vsh text
+    ^d faculty text
+    ^e department text
+    ^i subject text
+    ^j specialization text
+990 ^d record_creation_year text
+    ^e record_creation_month text
+    ^f record_creation_date text
+    ^w received_from text
+

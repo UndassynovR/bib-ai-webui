@@ -1,0 +1,98 @@
+import * as z from "zod";
+import { tool } from "langchain";
+import { mssqlDb } from "$lib/server/db/mssql";
+import { DOC_VIEW } from "$lib/server/db/mssql/schema";
+
+import { and, like, eq } from "drizzle-orm";
+
+interface SearchFilters {
+  title?: string;
+  language?: string;
+  year?: number;
+  volume?: number;
+  quantity?: number;
+}
+
+const FIELDS_TO_REMOVE = [
+  "DOC_ID",
+  "RECTYPE",
+  "BIBLEVEL",
+  "date_of_correction",
+  "cover_link",
+];
+
+async function searchBooks(filters: SearchFilters = {}) {
+  console.log("=== Diagnostics: Received filters ===");
+  console.log(filters);
+
+  const conditions = [];
+
+  if (filters.title) {
+    conditions.push(like(DOC_VIEW.title, `%${filters.title}%`));
+  }
+
+  if (filters.language) {
+    conditions.push(
+      like(DOC_VIEW.text_language_code, `%${filters.language}%`)
+    );
+  }
+
+  if (filters.year !== undefined) {
+    conditions.push(eq(DOC_VIEW.year, filters.year));
+  }
+
+  if (filters.volume !== undefined) {
+    conditions.push(eq(DOC_VIEW.volume, filters.volume));
+  }
+
+  if (filters.quantity !== undefined) {
+    conditions.push(eq(DOC_VIEW.quantity, filters.quantity));
+  }
+
+  const where =
+    conditions.length > 0 ? and(...conditions) : undefined;
+
+  console.log("=== Diagnostics: Executing Drizzle query ===");
+  console.log(where);
+
+  const rows = await mssqlDb
+    .select()
+    .from(DOC_VIEW)
+    .where(where)
+    .limit(10);
+
+  const cleaned = rows.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).filter(
+        ([key, v]) => v != null && !FIELDS_TO_REMOVE.includes(key)
+      )
+    )
+  );
+
+  return cleaned; // structured JSON
+}
+
+// Zod schema
+const schema = z.object({
+  title: z.string().optional(),
+  language: z.string().optional(),
+  year: z.number().optional(),
+  volume: z.number().optional(),
+  quantity: z.number().optional(),
+});
+
+// Tool
+export const searchBooksTool = tool(
+  async (input: z.infer<typeof schema>) => {
+    return await searchBooks(input);
+  },
+  {
+    name: "search_books",
+    description: `
+      Search the DOC_VIEW table using Drizzle ORM.
+      Uses safe parameterized queries; never constructs raw SQL.
+      Returns up to 10 cleaned records as structured JSON.
+    `,
+    schema,
+  }
+);

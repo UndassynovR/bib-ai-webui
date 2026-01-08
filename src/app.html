@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" class="loading">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<!-- Loading screen styles -->
+		<style>
+			/* Hide content and show loader initially */
+			html.loading body > div {
+				visibility: hidden;
+			}
+			
+			/* Loading screen */
+			html.loading body::before {
+				content: '';
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: #ffffff;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			
+			html.loading.dark body::before {
+				background: #1a1a1a;
+			}
+			
+			/* Spinner */
+			html.loading body::after {
+				content: '';
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				width: 40px;
+				height: 40px;
+				margin: -20px 0 0 -20px;
+				border: 3px solid rgba(0, 0, 0, 0.1);
+				border-top-color: #000;
+				border-radius: 50%;
+				animation: spin 0.8s linear infinite;
+				z-index: 10000;
+			}
+			
+			html.loading.dark body::after {
+				border-color: rgba(255, 255, 255, 0.1);
+				border-top-color: #fff;
+			}
+			
+			@keyframes spin {
+				to { transform: rotate(360deg); }
+			}
+			
+			/* Remove loading screen once ready */
+			html:not(.loading) body::before,
+			html:not(.loading) body::after {
+				display: none;
+			}
+		</style>
+		
+		<!-- Blocking script to prevent flash of wrong theme and language -->
+		<script>
+			(function() {
+				// Apply theme
+				const theme = localStorage.getItem('theme') || 'system';
+				
+				function getEffectiveTheme(theme) {
+					if (theme === 'system') {
+						return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+					}
+					return theme;
+				}
+				
+				const effectiveTheme = getEffectiveTheme(theme);
+				
+				if (effectiveTheme === 'dark') {
+					document.documentElement.classList.add('dark');
+				} else {
+					document.documentElement.classList.remove('dark');
+				}
+				
+				// Apply language and store it globally BEFORE any modules load
+				const language = localStorage.getItem('language') || 'auto';
+				
+				function detectBrowserLocale() {
+					const browserLang = navigator.language.toLowerCase();
+					if (browserLang.startsWith('ru')) return 'ru';
+					if (browserLang.startsWith('kk')) return 'kk';
+					return 'en';
+				}
+				
+				function getEffectiveLocale(language) {
+					if (language === 'auto') {
+						return detectBrowserLocale();
+					}
+					return language;
+				}
+				
+				const effectiveLocale = getEffectiveLocale(language);
+				document.documentElement.lang = effectiveLocale;
+				
+				// Store it globally so i18nStore can read it immediately
+				window.__INITIAL_LOCALE__ = effectiveLocale;
+				window.__INITIAL_LANGUAGE_SETTING__ = language;
+			})();
+		</script>
+		
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
