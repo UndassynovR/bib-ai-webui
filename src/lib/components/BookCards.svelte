@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Calendar, Building, Bookmark } from '@lucide/svelte';
   import { bookmarkStore } from '$lib/stores/bookmarkStore.svelte';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
   import { onMount } from 'svelte';
   import BookDetailPopup from './BookDetailPopup.svelte';
 
@@ -47,7 +48,7 @@
   function getAuthors(book: Book): string {
     return [book.author, book.other_authors]
       .filter(Boolean)
-      .join(', ') || 'Автор не указан';
+      .join(', ') || i18n.t('bookCards.authorNotSpecified');
   }
 
   async function handleBookmarkClick(docId: number, event: MouseEvent) {
@@ -76,13 +77,13 @@
       <div class="book-info-compact">
         <div class="book-content">
           <h3 class="book-title">
-            {book.title || 'Без названия'}
+            {book.title || i18n.t('bookCards.untitled')}
           </h3>
           <p class="book-author">
             {getAuthors(book)}
           </p>
         </div>
-                     
+        
         <div class="book-meta">
           {#if book.year}
             <span class="meta-item">
@@ -109,7 +110,7 @@
       onclick={() => showAllBooks = !showAllBooks}
       class="show-more-main-button"
     >
-      {showAllBooks ? 'Показать меньше' : `Показать все (${books.length})`}
+      {showAllBooks ? i18n.t('bookCards.showLess') : i18n.t('bookCards.showAll', { count: books.length })}
     </button>
   </div>
 {/if}
@@ -120,7 +121,6 @@
 {/if}
 
 <style>
-  /* Book Cards Styles */
   .book-card {
     background: var(--bg-secondary);
     border-radius: 12px;

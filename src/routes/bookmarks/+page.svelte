@@ -2,6 +2,7 @@
   import { fade, fly } from 'svelte/transition';
   import { Bookmark, X, Calendar, Building, MapPin, Hash, Tag, BookOpenText, Loader2, AlertCircle, AlertTriangle } from '@lucide/svelte';
   import { bookmarkStore } from '$lib/stores/bookmarkStore.svelte';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -25,7 +26,7 @@
       if (book.other_authors) parts.push(book.other_authors);
       return parts.join(', ');
     }
-    return 'Автор не указан';
+    return i18n.t('bookmarks.authorNotSpecified');
   }
 
   async function handleBookmarkClick(docId: number, event: MouseEvent) {
@@ -55,7 +56,7 @@
 </script>
 
 <svelte:head>
-  <title>Закладки</title>
+  <title>{i18n.t('bookmarks.title')}</title>
 </svelte:head>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -64,9 +65,9 @@
   <div class="page-header">
     <p class="subtitle">
       {#if displayedBooks.length === 0}
-        У вас пока нет сохраненных книг
+        {i18n.t('bookmarks.emptySubtitle')}
       {:else}
-        Сохранено книг: {displayedBooks.length}
+        {i18n.t('bookmarks.savedCount', { count: displayedBooks.length })}
       {/if}
     </p>
   </div>
@@ -75,8 +76,8 @@
     <!-- Book Cards Container -->
     <div class="books-container">
       {#each displayedBooks as book (book.DOC_ID)}
-        <!-- svelte_ignore a11y_click_events_have_key_events -->
-        <!-- svelte_ignore a11y_no_static_element_interactions -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
           class="book-card"
           onclick={() => handleBookClick(book)}
@@ -85,7 +86,7 @@
           <button
             class="bookmark-wrapper"
             onclick={(e) => handleBookmarkClick(book.DOC_ID, e)}
-            aria-label="Удалить из закладок"
+            aria-label={i18n.t('bookmarks.remove')}
           >
             <Bookmark 
               size={20}
@@ -96,16 +97,16 @@
           <h3 class="book-title" title={book.title}>{book.title}</h3>
           
           <div class="authors-row">
-            <p class="authors" title={getAuthors(book) !== 'Автор не указан' ? `Автор: ${getAuthors(book)}` : 'Автор не указан'}>
+            <p class="authors" title={getAuthors(book) !== i18n.t('bookmarks.authorNotSpecified') ? `${i18n.t('bookmarks.author')}: ${getAuthors(book)}` : i18n.t('bookmarks.authorNotSpecified')}>
               {getAuthors(book)}
             </p>
           </div>
           
           <div class="details-row">
-            <span class="detail-item" title={book.year ? `Год: ${book.year}` : 'Год не указан'}>
+            <span class="detail-item" title={book.year ? i18n.t('bookmarks.yearTitle', { year: book.year }) : i18n.t('bookmarks.yearMissing')}>
               {book.year || '-'}
             </span>
-            <span class="detail-item" title={book.publisher ? `Издательство: ${book.publisher}` : 'Издательство не указано'}>
+            <span class="detail-item" title={book.publisher ? i18n.t('bookmarks.publisherTitle', { publisher: book.publisher }) : i18n.t('bookmarks.publisherMissing')}>
               {book.publisher || '-'}
             </span>
           </div>
@@ -115,10 +116,10 @@
   {:else}
     <div class="empty-state">
       <Bookmark size={64} strokeWidth={1.5} />
-      <h2>Нет сохраненных книг</h2>
-      <p>Начните добавлять книги в закладки, чтобы они появились здесь</p>
+      <h2>{i18n.t('bookmarks.emptyTitle')}</h2>
+      <p>{i18n.t('bookmarks.emptyDescription')}</p>
       <a href="/" class="cta-btn">
-        Начать просмотр
+        {i18n.t('bookmarks.startBrowsing')}
       </a>
     </div>
   {/if}
@@ -138,7 +139,7 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div 
       class="popup-modal"
-	  onclick={(e) => e.stopPropagation()}
+      onclick={(e) => e.stopPropagation()}
       transition:fly={{ y: 20, duration: 300 }}
       role="dialog"
       aria-modal="true"
@@ -148,7 +149,7 @@
       <div class="modal-header">
         <div class="flex-1 pr-4">
           <h2 class="modal-title">
-            {selectedBook.title || 'Без названия'}
+            {selectedBook.title || i18n.t('bookmarks.untitled')}
           </h2>
           <p class="modal-subtitle">{getAuthors(selectedBook)}</p>
         </div>
@@ -156,7 +157,7 @@
           <button
             onclick={(e) => handleBookmarkClick(selectedBook.DOC_ID, e)}
             class="bookmark-button"
-            aria-label="Удалить из закладок"
+            aria-label={i18n.t('bookmarks.remove')}
           >
             <Bookmark 
               size={24}
@@ -166,7 +167,7 @@
           <button
             onclick={closeOverlay}
             class="close-button"
-            aria-label="Закрыть"
+            aria-label={i18n.t('bookmarks.close')}
           >
             <X size={24} />
           </button>
@@ -179,19 +180,19 @@
         <div>
           <h3 class="section-title">
             <BookOpenText size={20} />
-            Описание
+            {i18n.t('bookmarks.description')}
           </h3>
-                  
+          
           {#await fetch(`/api/descriptions/${selectedBook.DOC_ID}`).then(r => r.json())}
             <div class="loading-state">
               <Loader2 class="spinner" size={32} />
-              <span class="loading-text">Загрузка описания...</span>
+              <span class="loading-text">{i18n.t('bookmarks.loadingDescription')}</span>
             </div>
           {:then data}
             {#if data.failed || !data.description}
               <div class="warning-box">
                 <AlertTriangle size={20} />
-                <p>Описание недоступно</p>
+                <p>{i18n.t('bookmarks.descriptionUnavailable')}</p>
               </div>
             {:else}
               <p class="description-text">{data.description}</p>
@@ -199,21 +200,21 @@
           {:catch error}
             <div class="error-box">
               <AlertCircle size={20} />
-              <p>Ошибка загрузки описания</p>
+              <p>{i18n.t('bookmarks.descriptionError')}</p>
             </div>
           {/await}
         </div>
 
         <!-- Book Details Grid -->
         <div class="details-section">
-          <h3 class="section-title-secondary">Информация о книге</h3>
+          <h3 class="section-title-secondary">{i18n.t('bookmarks.bookInfo')}</h3>
           <div class="details-grid">
-                      
+            
             {#if selectedBook.year}
               <div class="detail-item">
                 <Calendar size={20} />
                 <div>
-                  <p class="detail-label">Год издания</p>
+                  <p class="detail-label">{i18n.t('bookmarks.yearOfPublication')}</p>
                   <p class="detail-value">{selectedBook.year}</p>
                 </div>
               </div>
@@ -223,7 +224,7 @@
               <div class="detail-item">
                 <Building size={20} />
                 <div>
-                  <p class="detail-label">Издательство</p>
+                  <p class="detail-label">{i18n.t('bookmarks.publisher')}</p>
                   <p class="detail-value">{selectedBook.publisher}</p>
                 </div>
               </div>
@@ -233,7 +234,7 @@
               <div class="detail-item">
                 <MapPin size={20} />
                 <div>
-                  <p class="detail-label">Место издания</p>
+                  <p class="detail-label">{i18n.t('bookmarks.publicationPlace')}</p>
                   <p class="detail-value">{selectedBook.publication_place}</p>
                 </div>
               </div>
@@ -253,7 +254,7 @@
               <div class="detail-item keywords-item">
                 <Tag size={20} />
                 <div class="flex-1">
-                  <p class="detail-label">Ключевые слова</p>
+                  <p class="detail-label">{i18n.t('bookmarks.keywords')}</p>
                   <div class="keywords-container">
                     {#each selectedBook.keywords.split(',') as keyword}
                       <span class="keyword-tag">

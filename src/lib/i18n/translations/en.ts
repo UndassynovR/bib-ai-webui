@@ -121,29 +121,55 @@ export default {
 
   bookmarks: {
     title: 'My Bookmarks',
-  
-    emptySubtitle: "You haven't bookmarked any books yet",
-    savedCount: '{count} saved',
-  
+    emptySubtitle: "You have no saved books yet",
+    savedCount: 'Saved books: {count}',
     remove: 'Remove bookmark',
-  
-    notSpecified: 'Not specified',
-  
+    authorNotSpecified: 'Author not specified',
+    author: 'Author',
     yearTitle: 'Year: {year}',
-    yearMissing: 'Year is not specified',
-  
+    yearMissing: 'Year not specified',
     publisherTitle: 'Publisher: {publisher}',
-    publisherMissing: 'Publisher is not specified',
-  
-    volumeTitle: 'Volume: {volume}',
-    volumeMissing: 'Volume is not specified',
-  
-    availableTitle: 'Available: {count}',
-    quantityMissing: 'Quantity is not specified',
-  
-    emptyTitle: 'No bookmarks yet',
-    emptyDescription:
-      'Browse the library and bookmark books to save them here for easy access later.',
+    publisherMissing: 'Publisher not specified',
+    emptyTitle: 'No saved books',
+    emptyDescription: 'Start adding books to bookmarks to see them here',
     startBrowsing: 'Start Browsing',
+    untitled: 'Untitled',
+    close: 'Close',
+    description: 'Description',
+    loadingDescription: 'Loading description...',
+    descriptionUnavailable: 'Description unavailable',
+    descriptionError: 'Error loading description',
+    bookInfo: 'Book Information',
+    yearOfPublication: 'Year of Publication',
+    publisher: 'Publisher',
+    publicationPlace: 'Publication Place',
+    keywords: 'Keywords',
+  },
+
+  chatSearch: {
+    title: 'Search Chats',
+    subtitle: 'Find messages in your conversations',
+    close: 'Close',
+    placeholder: 'Search by titles and messages...',
+    clear: 'Clear',
+    search: 'Search',
+    searching: 'Searching chats...',
+    noResults: 'Nothing found',
+    tryDifferent: 'Try changing your search query',
+    foundMatches: 'Found matches: {count}',
+    matches: '{count} matches',
+    similarTitles: 'Conversations with similar titles',
+    enterQuery: 'Enter a search query',
+    searchAllChats: 'We will search messages in all your conversations',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    daysAgo: '{days} days ago',
+  },
+
+  bookCards: {
+    authorNotSpecified: 'Author not specified',
+    untitled: 'Untitled',
+    showLess: 'Show less',
+    showAll: 'Show all ({count})',
   },
 };

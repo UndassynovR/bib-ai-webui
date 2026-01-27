@@ -3,6 +3,7 @@
   import { Search, X, MessageSquare, Calendar, Loader2, AlertCircle } from '@lucide/svelte';
   import { chatStore } from '$lib/stores/chatStore.svelte';
   import { goto } from '$app/navigation';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
 
   interface Props {
     onClose: () => void;
@@ -85,11 +86,14 @@
     const diffInMs = now.getTime() - date.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-    if (diffInDays === 0) return 'Сегодня';
-    if (diffInDays === 1) return 'Вчера';
-    if (diffInDays < 7) return `${diffInDays} дн. назад`;
+    if (diffInDays === 0) return i18n.t('chatSearch.today');
+    if (diffInDays === 1) return i18n.t('chatSearch.yesterday');
+    if (diffInDays < 7) return i18n.t('chatSearch.daysAgo', { days: diffInDays });
     
-    return date.toLocaleDateString('ru-RU', {
+    const locale = i18n.currentLanguage === 'kk' ? 'kk-KZ' : 
+                   i18n.currentLanguage === 'ru' ? 'ru-RU' : 'en-US';
+    
+    return date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -120,13 +124,13 @@
     <!-- Header -->
     <div class="modal-header">
       <div class="flex-1">
-        <h2 class="modal-title">Поиск в чатах</h2>
-        <p class="modal-subtitle">Найдите сообщения в ваших беседах</p>
+        <h2 class="modal-title">{i18n.t('chatSearch.title')}</h2>
+        <p class="modal-subtitle">{i18n.t('chatSearch.subtitle')}</p>
       </div>
       <button
         onclick={onClose}
         class="close-button"
-        aria-label="Закрыть"
+        aria-label={i18n.t('chatSearch.close')}
       >
         <X size={24} />
       </button>
@@ -140,14 +144,14 @@
           type="text"
           bind:value={searchQuery}
           onkeydown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Поиск по названиям и сообщениям..."
+          placeholder={i18n.t('chatSearch.placeholder')}
           class="search-input"
         />
         {#if searchQuery}
           <button
             onclick={() => { searchQuery = ''; hasSearched = false; searchResults = []; }}
             class="clear-button"
-            aria-label="Очистить"
+            aria-label={i18n.t('chatSearch.clear')}
           >
             <X size={16} />
           </button>
@@ -161,7 +165,7 @@
         {#if isSearching}
           <Loader2 class="spinner" size={20} />
         {:else}
-          Искать
+          {i18n.t('chatSearch.search')}
         {/if}
       </button>
     </div>
@@ -171,18 +175,18 @@
       {#if isSearching}
         <div class="loading-state">
           <Loader2 class="spinner" size={32} />
-          <span class="loading-text">Поиск в чатах...</span>
+          <span class="loading-text">{i18n.t('chatSearch.searching')}</span>
         </div>
       {:else if hasSearched && searchResults.length === 0}
         <div class="empty-state">
           <AlertCircle size={48} />
-          <p class="empty-title">Ничего не найдено</p>
-          <p class="empty-subtitle">Попробуйте изменить поисковый запрос</p>
+          <p class="empty-title">{i18n.t('chatSearch.noResults')}</p>
+          <p class="empty-subtitle">{i18n.t('chatSearch.tryDifferent')}</p>
         </div>
       {:else if searchResults.length > 0}
         <div class="results-section">
           <h3 class="section-title">
-            Найдено совпадений: {searchResults.length}
+            {i18n.t('chatSearch.foundMatches', { count: searchResults.length })}
           </h3>
           <div class="results-list">
             {#each searchResults as result}
@@ -201,7 +205,7 @@
                     <span>{formatDate(result.conversation.updated_at)}</span>
                   </div>
                   <span class="result-matches">
-                    {result.matches} {result.matches === 1 ? 'совпадение' : 'совпадений'}
+                    {i18n.t('chatSearch.matches', { count: result.matches })}
                   </span>
                 </div>
               </button>
@@ -211,7 +215,7 @@
       {:else if filteredConversations.length > 0 && searchQuery.trim()}
         <div class="results-section">
           <h3 class="section-title">
-            Беседы с похожим названием
+            {i18n.t('chatSearch.similarTitles')}
           </h3>
           <div class="results-list">
             {#each filteredConversations as conv}
@@ -236,8 +240,8 @@
       {:else if !hasSearched}
         <div class="empty-state">
           <Search size={48} />
-          <p class="empty-title">Введите запрос для поиска</p>
-          <p class="empty-subtitle">Мы найдем сообщения во всех ваших беседах</p>
+          <p class="empty-title">{i18n.t('chatSearch.enterQuery')}</p>
+          <p class="empty-subtitle">{i18n.t('chatSearch.searchAllChats')}</p>
         </div>
       {/if}
     </div>

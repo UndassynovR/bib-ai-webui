@@ -121,29 +121,55 @@ export default {
 
   bookmarks: {
     title: 'Мои закладки',
-  
-    emptySubtitle: 'Вы ещё не добавили ни одной книги в закладки',
-    savedCount: 'Сохранено: {count}',
-  
-    remove: 'Удалить закладку',
-  
-    notSpecified: 'Не указано',
-  
+    emptySubtitle: 'У вас пока нет сохраненных книг',
+    savedCount: 'Сохранено книг: {count}',
+    remove: 'Удалить из закладок',
+    authorNotSpecified: 'Автор не указан',
+    author: 'Автор',
     yearTitle: 'Год: {year}',
     yearMissing: 'Год не указан',
-  
     publisherTitle: 'Издательство: {publisher}',
     publisherMissing: 'Издательство не указано',
-  
-    volumeTitle: 'Том: {volume}',
-    volumeMissing: 'Том не указан',
-  
-    availableTitle: 'Доступно: {count}',
-    quantityMissing: 'Количество не указано',
-  
-    emptyTitle: 'Закладок пока нет',
-    emptyDescription:
-      'Просматривайте библиотеку и добавляйте книги в закладки, чтобы быстро находить их позже.',
+    emptyTitle: 'Нет сохраненных книг',
+    emptyDescription: 'Начните добавлять книги в закладки, чтобы они появились здесь',
     startBrowsing: 'Начать просмотр',
+    untitled: 'Без названия',
+    close: 'Закрыть',
+    description: 'Описание',
+    loadingDescription: 'Загрузка описания...',
+    descriptionUnavailable: 'Описание недоступно',
+    descriptionError: 'Ошибка загрузки описания',
+    bookInfo: 'Информация о книге',
+    yearOfPublication: 'Год издания',
+    publisher: 'Издательство',
+    publicationPlace: 'Место издания',
+    keywords: 'Ключевые слова',
+  },
+
+  chatSearch: {
+    title: 'Поиск в чатах',
+    subtitle: 'Найдите сообщения в ваших беседах',
+    close: 'Закрыть',
+    placeholder: 'Поиск по названиям и сообщениям...',
+    clear: 'Очистить',
+    search: 'Искать',
+    searching: 'Поиск в чатах...',
+    noResults: 'Ничего не найдено',
+    tryDifferent: 'Попробуйте изменить поисковый запрос',
+    foundMatches: 'Найдено совпадений: {count}',
+    matches: '{count} совпадений',
+    similarTitles: 'Беседы с похожим названием',
+    enterQuery: 'Введите запрос для поиска',
+    searchAllChats: 'Мы найдем сообщения во всех ваших беседах',
+    today: 'Сегодня',
+    yesterday: 'Вчера',
+    daysAgo: '{days} дн. назад',
+  },
+
+  bookCards: {
+    authorNotSpecified: 'Автор не указан',
+    untitled: 'Без названия',
+    showLess: 'Показать меньше',
+    showAll: 'Показать все ({count})',
   },
 };

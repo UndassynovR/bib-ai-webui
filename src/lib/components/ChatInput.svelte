@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Send } from '@lucide/svelte';
+  import { ChevronRight } from '@lucide/svelte';
   import { i18n } from '$lib/stores/i18nStore.svelte';
 
   interface Props {
@@ -63,7 +63,7 @@
       aria-label={i18n.t('input.send')}
       data-tooltip={i18n.t('input.sendHint')}
     >
-      <Send size={18} />
+      <ChevronRight size={18} />
     </button>
   </div>
 </form>

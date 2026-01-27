@@ -4,7 +4,10 @@
   import ConversationItem from './ConversationItem.svelte';
   import { goto } from '$app/navigation';
   import { i18n } from '$lib/stores/i18nStore.svelte';
-
+  
+  import ChatSearchPopup from './ChatSearchPopup.svelte';
+  let showSearch = $state(false);
+  
   interface Props {
     sidebarOpen: boolean;
     isWideScreen: boolean;
@@ -17,7 +20,7 @@
       is_guest: boolean;
     };
   }
-
+  
   let {
     sidebarOpen,
     isWideScreen,
@@ -25,11 +28,11 @@
     onOpenAuth,
     user,
   }: Props = $props();
-
+  
   // Get data directly from store
   let conversations = $derived(chatStore.conversations ?? []);
   let activeId = $derived(chatStore.activeConversationId);
-
+  
   // Handle delete
   async function handleDelete(id: string) {
     await chatStore.deleteConversation(id);
@@ -38,19 +41,19 @@
       goto('/');
     }
   }
-
+  
   function goHome() {
     goto('/');
   }
-
+  
   function goToSettings() {
     goto('/settings/general');
   }
-
+  
   function goToBookmarks() {
     goto('/bookmarks');
   }
-
+  
   function handleAccountClick() {
     if (user?.is_guest) {
       // Open auth modal for guests
@@ -60,7 +63,7 @@
       goto('/settings/account');
     }
   }
-
+  
   async function handleLogout() {
     try {
       await fetch('/api/auth', { method: 'DELETE' });
@@ -69,7 +72,7 @@
       console.error('Logout failed:', error);
     }
   }
-
+  
   let displayName = $derived(
     user?.is_guest 
       ? 'Guest' 
@@ -107,7 +110,7 @@
       </div>
       <div class="separator"></div>
     {/if}
-
+    
     <div class="main-section">
       <button
         class="sidebar-item"
@@ -122,11 +125,12 @@
           <span class="label">{i18n.t('sidebar.newChat')}</span>
         {/if}
       </button>
-
+      
       <button
         class="sidebar-item"
         aria-label={i18n.t('sidebar.searchChats')}
         data-tooltip={i18n.t('sidebar.searchChats')}
+        onclick={() => showSearch = true}
       >
         <div class="icon-wrapper">
           <Search size={20} />
@@ -135,7 +139,7 @@
           <span class="label">{i18n.t('sidebar.searchChats')}</span>
         {/if}
       </button>
-
+      
       <button
         class="sidebar-item"
         aria-label={i18n.t('sidebar.bookmarks')}
@@ -150,7 +154,7 @@
         {/if}
       </button>
     </div>
-
+    
     {#if sidebarOpen}
       <div class="chat-list-label">
         {i18n.t('sidebar.yourChats')}
@@ -166,7 +170,7 @@
         {/each}
       </div>
     {/if}
-
+    
     <div class="bottom-section">
       <button
         class="sidebar-item settings-btn"
@@ -181,7 +185,7 @@
           <span class="label">{i18n.t('sidebar.settings')}</span>
         {/if}
       </button>
-
+      
       <button
         class="sidebar-item account-btn"
         aria-label={
@@ -205,7 +209,7 @@
       </button>
     </div>
   </div>
-
+  
   {#if !isWideScreen && sidebarOpen}
     <button
       class="mobile-close"
@@ -223,6 +227,10 @@
     onclick={onToggle}
     aria-label={i18n.t('sidebar.close')}
   ></button>
+{/if}
+
+{#if showSearch}
+  <ChatSearchPopup onClose={() => showSearch = false} />
 {/if}
 
 <style>

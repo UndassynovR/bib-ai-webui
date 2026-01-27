@@ -199,7 +199,7 @@ export async function generateConversationTitle(message: string): Promise<string
     const response = await titleModel.invoke([
       {
         role: "system",
-        content: "Generate a concise, descriptive title (max 50 characters) for a conversation. Return ONLY the title, no quotes, explanations, or extra text."
+        content: "Generate a concise, descriptive title (max 50 characters) for a conversation. Return ONLY the title, no quotes, explanations, or extra text. Use one of these languages: english, russian, kazakh."
       },
       {
         role: "user",
