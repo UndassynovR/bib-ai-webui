@@ -10,9 +10,9 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:push": "drizzle-kit push"
+		"db:generate": "drizzle-kit generate --config ./drizzle.config.ts",
+		"db:migrate": "drizzle-kit migrate --config ./drizzle.config.ts",
+		"db:push": "drizzle-kit push --config ./drizzle.config.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",
