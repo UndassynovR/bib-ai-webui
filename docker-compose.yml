@@ -4,18 +4,18 @@ services:
     container_name: chatdb
     restart: unless-stopped
     environment:
-      POSTGRES_DB: chatdb
-      POSTGRES_USER: chatuser
-      POSTGRES_PASSWORD: secret
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chatuser -d chatdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   app:
     build: .
@@ -29,6 +29,25 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      # Explicitly set database host to use service name
+      PG_HOST: db
+      PG_PORT: 5432
+      PG_DB: ${PG_DB}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+      # Also set standard postgres env vars for the postgres npm package
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${PG_DB}
+      PGUSER: ${PG_USER}
+      PGPASSWORD: ${PG_PASSWORD}
     env_file:
       - .env
     restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

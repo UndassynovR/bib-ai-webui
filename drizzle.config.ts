@@ -5,7 +5,10 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: Bun.env.PG_DATABASE_URL!,
+    host: Bun.env.PG_HOST!,
+    port: Number(Bun.env.PG_PORT ?? 5432),
+    database: Bun.env.PG_DB!,
+    user: Bun.env.PG_USER!,
+    password: Bun.env.PG_PASSWORD!,
   },
 });
-
