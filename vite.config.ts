@@ -9,8 +9,8 @@ export default defineConfig(({ mode }) => {
     plugins: [tailwindcss(), sveltekit()],
     server: {
       port: Number(env.APP_PORT ?? 5173),
-      host: true
+      host: true,
+      allowedHosts: ['ai-library.kaztbu.edu.kz'],
     }
   };
 });
-
