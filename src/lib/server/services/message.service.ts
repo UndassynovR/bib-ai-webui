@@ -1,5 +1,6 @@
 // src/lib/server/services/message.service.ts
-import { db } from "$lib/server/db/pg";
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { messages } from "$lib/server/db/pg/schema";
 import { eq, asc } from "drizzle-orm";
 

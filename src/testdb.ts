@@ -1,4 +1,5 @@
-import { mssqlDb } from "$lib/server/db/mssql";
+import { getMssqlDb } from '$lib/server/db/mssql';
+const mssqlDb = getMssqlDb();
 import { DOC, DOC_VIEW } from "$lib/server/db/mssql/schema"; 
 import { limit, like, desc, or } from "drizzle-orm";
 

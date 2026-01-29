@@ -1,6 +1,7 @@
 // src/routes/+layout.server.ts
 import type { LayoutServerLoad } from './$types';
-import { db } from '$lib/server/db/pg';
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { users } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 

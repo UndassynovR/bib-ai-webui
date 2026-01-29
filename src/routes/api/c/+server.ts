@@ -1,6 +1,7 @@
 // src/routes/api/c/+server.ts
 import type { RequestHandler } from "./$types";
-import { db } from "$lib/server/db/pg";
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { users, conversations } from "$lib/server/db/pg/schema";
 import { eq, desc } from "drizzle-orm";
 

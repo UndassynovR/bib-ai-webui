@@ -1,7 +1,9 @@
-import { OPENAI_API_KEY } from "$env/static/private";
+import { env } from '$env/dynamic/private';
 import { ChatOpenAI } from "@langchain/openai";
 import { createAgent } from "langchain";
 import { searchBooksTool } from "$lib/server/services/tools/searchBooks";
+
+const OPENAI_API_KEY = env.OPENAI_API_KEY;
 
 interface Message {
   role: string;

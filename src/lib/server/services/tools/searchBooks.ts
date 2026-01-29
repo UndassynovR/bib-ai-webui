@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { tool } from "langchain";
-import { mssqlDb } from "$lib/server/db/mssql";
+import { getMssqlDb } from '$lib/server/db/mssql';
+const mssqlDb = getMssqlDb();
 import { DOC_VIEW } from "$lib/server/db/mssql/schema";
 
 interface SearchFilters {

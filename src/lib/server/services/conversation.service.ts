@@ -1,5 +1,6 @@
 // src/lib/server/services/conversation.service.ts
-import { db } from "$lib/server/db/pg";
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { conversations } from "$lib/server/db/pg/schema";
 import { eq, desc } from "drizzle-orm";
 

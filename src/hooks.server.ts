@@ -1,6 +1,7 @@
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit';
-import { db } from '$lib/server/db/pg';
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { users, sessions } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 

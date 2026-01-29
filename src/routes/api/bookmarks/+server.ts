@@ -1,6 +1,7 @@
 // src/routes/api/bookmarks/+server.ts
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db/pg';
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
 import { bookmarks } from '$lib/server/db/pg/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { error, json } from '@sveltejs/kit';

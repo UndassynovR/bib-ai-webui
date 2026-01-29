@@ -1,18 +1,23 @@
 // src/routes/api/descriptions/[doc_id]/+server.ts
 import type { RequestHandler } from './$types';
-import { db as pgDb } from '$lib/server/db/pg';
-import { mssqlDb } from '$lib/server/db/mssql';
+import { getDb } from '$lib/server/db/pg';
+
+const pgDb = getDb();
+import { getMssqlDb } from '$lib/server/db/mssql';
+const mssqlDb = getMssqlDb();
 import { bookDescriptions } from '$lib/server/db/pg/schema';
 import { DOC_VIEW } from '$lib/server/db/mssql/schema';
 import { eq } from 'drizzle-orm';
 import { error, json } from '@sveltejs/kit';
-import { OPENAI_API_KEY } from "$env/static/private";
+import { env } from '$env/dynamic/private';
 
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { PDFParse } from 'pdf-parse';
+
+const OPENAI_API_KEY = env.OPENAI_API_KEY;
 
 interface Book {
   author?: string;

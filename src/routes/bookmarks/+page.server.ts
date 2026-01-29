@@ -1,7 +1,9 @@
 // src/routes/bookmarks/+page.server.ts
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/db/pg';
-import { mssqlDb } from '$lib/server/db/mssql';
+import { getDb } from '$lib/server/db/pg';
+const db = getDb();
+import { getMssqlDb } from '$lib/server/db/mssql';
+const mssqlDb = getMssqlDb();
 import { bookmarks } from '$lib/server/db/pg/schema';
 import { DOC_VIEW } from '$lib/server/db/mssql/schema';
 import { eq, inArray } from 'drizzle-orm';
