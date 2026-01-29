@@ -79,7 +79,7 @@
   marked.setOptions({ breaks: true, gfm: true });
 
   let renderedContent = $derived(
-    isUser ? parsed.messageText : marked(parsed.messageText)
+    isUser ? parsed.messageText : marked(parsed.messageText.replace(/^(?:\[\])+/,''))
   );
 </script>
 

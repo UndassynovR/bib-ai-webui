@@ -1,16 +1,23 @@
-FROM oven/bun:1
+FROM oven/bun:latest
 
 WORKDIR /app
 
-COPY package.json .
-COPY bun.lock .
+# deps first (better cache)
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-RUN bun i
-
+# app source
 COPY . .
 
+# production env
+ENV NODE_ENV=production
 ARG APP_PORT=5173
-ENV APP_PORT=${APP_PORT}
+ENV PORT=${APP_PORT}
+
+# build SvelteKit app
+RUN bunx svelte-kit sync && bun run build
+
 EXPOSE ${APP_PORT}
 
-CMD ["sh", "-c", "bun run db:generate && bun run db:migrate && bun run dev --host 0.0.0.0"]
+# run real prod server
+CMD ["sh", "-c", "bun run db:generate && bun run db:migrate && bun ./build/index.js"]
