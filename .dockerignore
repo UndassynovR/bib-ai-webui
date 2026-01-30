@@ -2,7 +2,6 @@
 node_modules
 
 # build output
-build
 dist
 .output
 .vercel
@@ -10,8 +9,8 @@ dist
 .wrangler
 
 # env
-.env
-.env.*
+# .env
+# .env.*
 
 # db / runtime data
 data
@@ -28,4 +27,3 @@ vite.config.ts.timestamp-*
 # misc
 book.bin
 README.md
-

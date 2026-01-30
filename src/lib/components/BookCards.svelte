@@ -28,10 +28,10 @@
   $: bookmarkedIds = bookmarkStore.bookmarks;
 
   // Debug: Log books when component receives them
-  $: {
-    console.log('BookCards received books:', books);
-    console.log('Total books:', books?.length || 0);
-  }
+  // $: {
+  // console.log('BookCards received books:', books);
+  // console.log('Total books:', books?.length || 0);
+  // }
 
   $: displayedBooks = showAllBooks ? books : books.slice(0, 4);
   $: hasMoreBooks = books.length > 4;

@@ -21,9 +21,6 @@ services:
     build: .
     container_name: chatapp
     working_dir: /app
-    volumes:
-      - ./:/app
-      - /app/node_modules
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:

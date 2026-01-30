@@ -1,4 +1,4 @@
-FROM oven/bun:latest
+FROM oven/bun:alpine
 
 WORKDIR /app
 
@@ -20,4 +20,4 @@ RUN bunx svelte-kit sync && bun run build
 EXPOSE ${APP_PORT}
 
 # run real prod server
-CMD ["sh", "-c", "bun run db:generate && bun run db:migrate && bun ./build/index.js"]
+CMD ["sh", "-c", "bun run db:generate && bun run db:migrate && bun run start"]
