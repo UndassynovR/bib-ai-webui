@@ -29,6 +29,7 @@ export default {
   
     yourChats: 'Your chats',
   
+	admin: "Admin dashboard",
     settings: 'Settings',
   
     account: 'Account',
@@ -171,5 +172,43 @@ export default {
     untitled: 'Untitled',
     showLess: 'Show less',
     showAll: 'Show all ({count})',
+  },
+
+  dashboard: {
+    title: 'Dashboard',
+    
+    systemHealth: {
+      title: 'System Health',
+      description: 'Server status',
+      uptime: 'Uptime',
+      apiPing: 'API Ping',
+      error: 'Error',
+    },
+    
+    users: {
+      title: 'Users',
+      description: 'Overview of user accounts',
+      total: 'Total',
+      registered: 'Registered',
+      guests: 'Guests',
+      active: 'Active (7d)',
+      newUsers: 'New Users',
+      today: 'Today',
+      thisWeek: 'This Week',
+      thisMonth: 'This Month',
+    },
+    
+    conversations: {
+      title: 'Conversations',
+      description: 'Chat activity statistics',
+      total: 'Total',
+      today: 'Today',
+      thisWeek: 'This Week',
+    },
+    
+    bookmarks: {
+      title: 'Bookmarks',
+      total: 'Total',
+    },
   },
 };

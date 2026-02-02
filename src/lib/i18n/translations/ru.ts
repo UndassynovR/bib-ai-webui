@@ -29,6 +29,7 @@ export default {
   
     yourChats: 'Ваши чаты',
   
+	admin: "Панель управления",
     settings: 'Настройки',
   
     account: 'Аккаунт',
@@ -171,5 +172,43 @@ export default {
     untitled: 'Без названия',
     showLess: 'Показать меньше',
     showAll: 'Показать все ({count})',
+  },
+
+  dashboard: {
+    title: 'Панель управления',
+    
+    systemHealth: {
+      title: 'Состояние системы',
+      description: 'Статус сервера',
+      uptime: 'Время работы',
+      apiPing: 'Пинг API',
+      error: 'Ошибка',
+    },
+    
+    users: {
+      title: 'Пользователи',
+      description: 'Обзор учетных записей',
+      total: 'Всего',
+      registered: 'Зарегистрированные',
+      guests: 'Гости',
+      active: 'Активные (7д)',
+      newUsers: 'Новые пользователи',
+      today: 'Сегодня',
+      thisWeek: 'На этой неделе',
+      thisMonth: 'В этом месяце',
+    },
+    
+    conversations: {
+      title: 'Разговоры',
+      description: 'Статистика чатов',
+      total: 'Всего',
+      today: 'Сегодня',
+      thisWeek: 'На этой неделе',
+    },
+    
+    bookmarks: {
+      title: 'Закладки',
+      total: 'Всего',
+    },
   },
 };

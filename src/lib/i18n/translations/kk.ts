@@ -29,6 +29,7 @@ export default {
     
     yourChats: 'Сөйлесулеріңіз',
     
+	admin: "Бақылау тақтасы",
     settings: 'Баптаулар',
     
     account: 'Есептік жазба',
@@ -171,5 +172,43 @@ export default {
     untitled: 'Атаусыз',
     showLess: 'Азырақ көрсету',
     showAll: 'Барлығын көрсету ({count})',
+  },
+
+  dashboard: {
+    title: 'Басқару тақтасы',
+    
+    systemHealth: {
+      title: 'Жүйе жағдайы',
+      description: 'Сервер күйі',
+      uptime: 'Жұмыс уақыты',
+      apiPing: 'API пингі',
+      error: 'Қате',
+    },
+    
+    users: {
+      title: 'Пайдаланушылар',
+      description: 'Тіркелгілерге шолу',
+      total: 'Барлығы',
+      registered: 'Тіркелген',
+      guests: 'Қонақтар',
+      active: 'Белсенді (7к)',
+      newUsers: 'Жаңа пайдаланушылар',
+      today: 'Бүгін',
+      thisWeek: 'Осы аптада',
+      thisMonth: 'Осы айда',
+    },
+    
+    conversations: {
+      title: 'Әңгімелер',
+      description: 'Чат статистикасы',
+      total: 'Барлығы',
+      today: 'Бүгін',
+      thisWeek: 'Осы аптада',
+    },
+    
+    bookmarks: {
+      title: 'Бетбелгілер',
+      total: 'Барлығы',
+    },
   },
 };

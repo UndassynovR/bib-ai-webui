@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
   
   let { data } = $props();
   const { stats } = data;
@@ -28,7 +29,6 @@
   
   onMount(() => {
     updateUptime();
-    // Update every second
     interval = setInterval(() => {
       stats.uptime.seconds += 1;
       updateUptime();
@@ -42,62 +42,96 @@
 
 <div class="dashboard-page">
   <div class="dashboard-header">
-    <h1>Dashboard</h1>
+    <h1>{i18n.t('dashboard.title')}</h1>
   </div>
 
-  <!-- System -->
+  <!-- System Health -->
   <div class="dashboard-section">
-    <h2>System</h2>
-    <p class="description">Server information</p>
+    <h2>{i18n.t('dashboard.systemHealth.title')}</h2>
+    <p class="description">{i18n.t('dashboard.systemHealth.description')}</p>
     
     <div class="stats-row">
       <div class="stat">
-        <span class="label">Uptime</span>
+        <span class="label">{i18n.t('dashboard.systemHealth.uptime')}</span>
         <span class="value uptime">{uptime}</span>
+      </div>
+      <div class="stat">
+        <span class="label">{i18n.t('dashboard.systemHealth.apiPing')}</span>
+        <span class="value">{stats.system.apiPing >= 0 ? `${stats.system.apiPing}ms` : i18n.t('dashboard.systemHealth.error')}</span>
       </div>
     </div>
   </div>
 
   <!-- Users -->
   <div class="dashboard-section">
-    <h2>Users</h2>
-    <p class="description">Overview of user accounts</p>
+    <h2>{i18n.t('dashboard.users.title')}</h2>
+    <p class="description">{i18n.t('dashboard.users.description')}</p>
     
     <div class="stats-row">
       <div class="stat">
-        <span class="label">Total</span>
+        <span class="label">{i18n.t('dashboard.users.total')}</span>
         <span class="value">{stats.users.total}</span>
       </div>
       <div class="stat">
-        <span class="label">Registered</span>
+        <span class="label">{i18n.t('dashboard.users.registered')}</span>
         <span class="value">{stats.users.registered}</span>
       </div>
       <div class="stat">
-        <span class="label">Guests</span>
+        <span class="label">{i18n.t('dashboard.users.guests')}</span>
         <span class="value">{stats.users.guests}</span>
+      </div>
+      <div class="stat">
+        <span class="label">{i18n.t('dashboard.users.active')}</span>
+        <span class="value">{stats.users.active}</span>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>{i18n.t('dashboard.users.newUsers')}</h3>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="label">{i18n.t('dashboard.users.today')}</span>
+          <span class="value">{stats.users.newToday}</span>
+        </div>
+        <div class="stat">
+          <span class="label">{i18n.t('dashboard.users.thisWeek')}</span>
+          <span class="value">{stats.users.newThisWeek}</span>
+        </div>
+        <div class="stat">
+          <span class="label">{i18n.t('dashboard.users.thisMonth')}</span>
+          <span class="value">{stats.users.newThisMonth}</span>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Conversations -->
   <div class="dashboard-section">
-    <h2>Conversations</h2>
-    <p class="description">Chat activity statistics</p>
+    <h2>{i18n.t('dashboard.conversations.title')}</h2>
+    <p class="description">{i18n.t('dashboard.conversations.description')}</p>
     
     <div class="stats-row">
       <div class="stat">
-        <span class="label">Total</span>
+        <span class="label">{i18n.t('dashboard.conversations.total')}</span>
         <span class="value">{stats.conversations.total}</span>
+      </div>
+      <div class="stat">
+        <span class="label">{i18n.t('dashboard.conversations.today')}</span>
+        <span class="value">{stats.conversations.today}</span>
+      </div>
+      <div class="stat">
+        <span class="label">{i18n.t('dashboard.conversations.thisWeek')}</span>
+        <span class="value">{stats.conversations.thisWeek}</span>
       </div>
     </div>
   </div>
 
   <!-- Bookmarks -->
   <div class="dashboard-section">
-    <h2>Bookmarks</h2>
+    <h2>{i18n.t('dashboard.bookmarks.title')}</h2>
     <div class="stats-row">
       <div class="stat">
-        <span class="label">Total</span>
+        <span class="label">{i18n.t('dashboard.bookmarks.total')}</span>
         <span class="value">{stats.bookmarks.total}</span>
       </div>
     </div>
@@ -106,7 +140,7 @@
 
 <style>
   .dashboard-page {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
   }
@@ -137,10 +171,23 @@
     color: var(--text-primary);
   }
 
+  h3 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: var(--text-primary);
+  }
+
   .description {
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin: 0 0 1rem;
+  }
+
+  .subsection {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
   }
 
   .stats-row {
@@ -158,6 +205,8 @@
     font-size: 0.75rem;
     color: var(--text-secondary);
     margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
   .value {

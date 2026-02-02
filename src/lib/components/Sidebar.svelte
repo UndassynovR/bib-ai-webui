@@ -188,7 +188,7 @@
             <Wrench size={20} />
           </div>
           {#if sidebarOpen}
-            <span class="label">Admin dashboard</span>
+            <span class="label">{i18n.t('sidebar.admin')}</span>
           {/if}
         </button>
       {/if}

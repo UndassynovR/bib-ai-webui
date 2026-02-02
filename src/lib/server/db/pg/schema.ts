@@ -84,7 +84,6 @@ export const bookmarks = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     doc_id: integer().notNull(), // References DOC_ID from MSSQL database
-    created_at: timestamp().notNull().defaultNow(),
   },
   (table) => ({
     user_id_idx: index("bookmarks_user_id_idx").on(table.user_id),
