@@ -14,12 +14,13 @@ export const users = pgTable(
   "users",
   {
     id: uuid().primaryKey().$default(() => Bun.randomUUIDv7()),
-    email: varchar({ length: 256 }).unique(), // nullable for guests
-    password_hash: varchar({ length: 256 }), // nullable for guests
+    email: varchar({ length: 256 }).unique(),
+    password_hash: varchar({ length: 256 }),
     name: varchar({ length: 256 }),
     is_guest: boolean().notNull().default(true),
-    theme: varchar({ length: 20 }).notNull().default('system'), // 'light' | 'dark' | 'system'
-    language: varchar({ length: 10 }).notNull().default('auto'), // 'auto' | 'en' | 'ru' | 'kk'
+    role: varchar({ length: 20 }).notNull().default('user'), // 'user' | 'admin'
+    theme: varchar({ length: 20 }).notNull().default('system'),
+    language: varchar({ length: 10 }).notNull().default('auto'),
     updated_at: timestamp().defaultNow(),
   },
   (table) => ({

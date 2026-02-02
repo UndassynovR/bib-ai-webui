@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PanelLeft, MessageCirclePlus, BookMarked, CircleUser, Search, Settings, LogOut } from '@lucide/svelte';
+  import { PanelLeft, MessageCirclePlus, BookMarked, CircleUser, Search, Wrench, Settings, LogOut } from '@lucide/svelte';
   import { chatStore } from '$lib/stores/chatStore.svelte';
   import ConversationItem from './ConversationItem.svelte';
   import { goto } from '$app/navigation';
@@ -18,6 +18,7 @@
       email: string | null;
       name: string | null;
       is_guest: boolean;
+	  role: string;
     };
   }
   
@@ -44,6 +45,10 @@
   
   function goHome() {
     goto('/');
+  }
+
+  function goToAdminDashboard() {
+    goto('/admin/dashboard');
   }
   
   function goToSettings() {
@@ -172,6 +177,22 @@
     {/if}
     
     <div class="bottom-section">
+      {#if user?.role == 'admin'}
+        <button
+          class="sidebar-item admin-btn"
+          aria-label="Admin dashboard"
+          data-tooltip="Admin dashboard"
+          onclick={goToAdminDashboard}
+        >
+          <div class="icon-wrapper">
+            <Wrench size={20} />
+          </div>
+          {#if sidebarOpen}
+            <span class="label">Admin dashboard</span>
+          {/if}
+        </button>
+      {/if}
+
       <button
         class="sidebar-item settings-btn"
         aria-label={i18n.t('sidebar.settings')}
@@ -441,7 +462,7 @@
   }
 
   .chat-list-label {
-    padding: 0.2rem 0 0 1rem;
+    padding: 0.4rem 0 0 1rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
     white-space: nowrap;

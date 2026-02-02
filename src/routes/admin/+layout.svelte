@@ -1,21 +1,20 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { i18n } from '$lib/stores/i18nStore.svelte';
 
   let { children } = $props();
 
   function navigate(path: string) {
-    goto(`/settings/${path}`);
+    goto(`/admin/${path}`);
   }
 
-  let menu = $derived([
-    { name: i18n.t('settings.general'), path: 'general' },
-    { name: i18n.t('settings.account'), path: 'account' }
-  ]);
+  const menu = [
+    { name: 'Dashboard', path: 'dashboard' },
+    { name: 'Users', path: 'users' }
+  ];
 </script>
 
-<div class="settings-layout">
+<div class="admin-layout">
   <nav class="vertical-menu">
     {#each menu as item}
       <button
@@ -28,13 +27,13 @@
     {/each}
   </nav>
 
-  <section class="settings-content">
+  <section class="admin-content">
     {@render children()}
   </section>
 </div>
 
 <style>
-  .settings-layout {
+  .admin-layout {
     display: flex;
     height: 100%;
   }
@@ -47,6 +46,7 @@
     flex-direction: column;
     gap: 0.25rem;
     flex-shrink: 0;
+    /* background: var(--bg-secondary); */
   }
 
   .menu-item {
@@ -57,11 +57,11 @@
     border: none;
     text-align: left;
     color: var(--text-primary);
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s;
   }
 
   .menu-item:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
   }
 
   .menu-item.active {
@@ -69,15 +69,14 @@
     font-weight: 500;
   }
 
-  .settings-content {
+  .admin-content {
     flex: 1;
     padding: 1rem;
     overflow: auto;
   }
 
-  /* Mobile */
   @media (max-width: 700px) {
-    .settings-layout {
+    .admin-layout {
       flex-direction: column;
     }
 
@@ -100,7 +99,7 @@
       border-radius: 0;
     }
 
-    .settings-content {
+    .admin-content {
       padding: 0.75rem;
     }
   }

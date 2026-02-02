@@ -1,10 +1,10 @@
 // src/routes/api/auth/+server.ts
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db/pg';
-const db = getDb();
 import { users, sessions } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 
+const db = getDb();
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Helper to hash passwords (install: bun add bcrypt @types/bcrypt)

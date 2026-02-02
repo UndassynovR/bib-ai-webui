@@ -30,6 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
             email: user.email,
             name: user.name,
             is_guest: user.is_guest,
+            role: user.role,
           };
         }
       } else if (session) {

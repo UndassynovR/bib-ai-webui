@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ChevronRight } from '@lucide/svelte';
   import { i18n } from '$lib/stores/i18nStore.svelte';
+  import { tick } from 'svelte';
 
   interface Props {
     onSubmit: (message: string) => void;
@@ -29,7 +30,7 @@
     }
   }
 
-  function handleSubmit(event: Event) {
+  async function handleSubmit(event: Event) {
     event.preventDefault();
     if (!prompt.trim() || disabled) return;
 
@@ -39,6 +40,10 @@
     if (textarea) {
       textarea.style.height = "auto";
       isMultiline = false;
+      
+      // Wait for DOM update and refocus
+      await tick();
+      textarea.focus();
     }
   }
 </script>
@@ -52,6 +57,7 @@
       rows="1"
       oninput={autoResize}
       onkeydown={handleKeyDown}
+      autofocus
       {disabled}
     ></textarea>
 
