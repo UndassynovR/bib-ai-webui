@@ -13,6 +13,7 @@
   let users: User[] = [];
   let expanded: Record<string, boolean> = {};
   let loadingIds: Record<string, boolean> = {};
+  let isLoading = true;
 
   async function fetchUsers() {
     try {
@@ -21,6 +22,8 @@
       users = await res.json();
     } catch (err) {
       console.error(err);
+    } finally {
+      isLoading = false;
     }
   }
 
@@ -64,41 +67,46 @@
 
 <div class="users-page">
   <h1>Users</h1>
-  {#each users as user (user.id)}
-    <div class="user-card">
-      <div class="user-summary" on:click={() => toggleExpand(user.id)}>
-        <span>{user.email || `Guest ${user.id.slice(0, 8)}`}</span>
-        <span>{expanded[user.id] ? '▲' : '▼'}</span>
-      </div>
+  
+  {#if isLoading}
+    <div class="loading">Loading...</div>
+  {:else}
+    {#each users as user (user.id)}
+      <div class="user-card">
+        <button class="user-summary" on:click={() => toggleExpand(user.id)}>
+          <span>{user.email || `Guest ${user.id.slice(0, 8)}`}</span>
+          <span>{expanded[user.id] ? '▲' : '▼'}</span>
+        </button>
 
-      {#if expanded[user.id]}
-        <div class="user-details">
-          <label>
-            Name:
-            <input type="text" bind:value={user.name} placeholder="Name" />
-          </label>
+        {#if expanded[user.id]}
+          <div class="user-details">
+            <label>
+              Name:
+              <input type="text" bind:value={user.name} placeholder="Name" />
+            </label>
 
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              checked={user.role === 'admin'}
-              on:change={(e) => user.role = e.currentTarget.checked ? 'admin' : 'user'}
-            />
-            Is admin
-          </label>
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                checked={user.role === 'admin'}
+                on:change={(e) => user.role = e.currentTarget.checked ? 'admin' : 'user'}
+              />
+              Is admin
+            </label>
 
-          <div class="actions">
-            <button on:click={() => saveUser(user)} disabled={loadingIds[user.id]}>
-              {loadingIds[user.id] ? 'Saving...' : 'Save'}
-            </button>
-            <button on:click={() => deleteUser(user)} disabled={loadingIds[user.id]}>
-              {loadingIds[user.id] ? 'Deleting...' : 'Delete'}
-            </button>
+            <div class="actions">
+              <button on:click={() => saveUser(user)} disabled={loadingIds[user.id]}>
+                {loadingIds[user.id] ? 'Saving...' : 'Save'}
+              </button>
+              <button on:click={() => deleteUser(user)} disabled={loadingIds[user.id]}>
+                {loadingIds[user.id] ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
-        </div>
-      {/if}
-    </div>
-  {/each}
+        {/if}
+      </div>
+    {/each}
+  {/if}
 </div>
 
 <style>
@@ -106,6 +114,7 @@
     max-width: 800px;
     margin: 2rem auto;
     font-family: system-ui, sans-serif;
+    padding: 0 1rem;
   }
 
   h1 {
@@ -114,6 +123,12 @@
     margin: 0;
     color: var(--text-primary);
     margin-bottom: 1.5rem;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
   }
 
   .user-card {
@@ -130,11 +145,16 @@
   }
 
   .user-summary {
+    width: 100%;
     padding: 0.75rem 1rem;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
     font-weight: 500;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: var(--text-primary);
   }
 
   .user-details {
@@ -149,6 +169,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--text-primary);
   }
 
   .checkbox-label {
@@ -164,6 +185,8 @@
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
   }
 
   .actions {

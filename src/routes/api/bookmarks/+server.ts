@@ -17,7 +17,7 @@ export const GET: RequestHandler = async ({ locals }) => {
       .select()
       .from(bookmarks)
       .where(eq(bookmarks.user_id, locals.userId))
-      .orderBy(desc(bookmarks.created_at));
+      .orderBy(desc(bookmarks.id));
 
     return json({
       bookmarks: userBookmarks.map(b => b.doc_id),

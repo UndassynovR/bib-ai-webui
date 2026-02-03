@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
+  import { onMount, onDestroy } from 'svelte';
   import { Search, X, MessageSquare, Calendar, Loader2, AlertCircle } from '@lucide/svelte';
   import { chatStore } from '$lib/stores/chatStore.svelte';
   import { goto } from '$app/navigation';
@@ -24,6 +25,22 @@
         )
       : []
   );
+
+  onMount(() => {
+    const handleClick = (e: MouseEvent) => {
+      const modal = document.querySelector('.popup-modal');
+      if (modal && !modal.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+  
+    // use capture phase so clicks don’t get stopped by other elements
+    document.addEventListener('click', handleClick, true);
+  
+    onDestroy(() => {
+      document.removeEventListener('click', handleClick, true);
+    });
+  });
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
@@ -103,11 +120,8 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="popup-backdrop"
-  onclick={onClose}
   transition:fade={{ duration: 200 }}
   role="presentation"
 >

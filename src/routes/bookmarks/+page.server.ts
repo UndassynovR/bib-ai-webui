@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ locals }) => {
       .select()
       .from(bookmarks)
       .where(eq(bookmarks.user_id, locals.userId))
-      .orderBy(bookmarks.created_at);
+      .orderBy(bookmarks.id);
 
     if (userBookmarks.length === 0) {
       return {

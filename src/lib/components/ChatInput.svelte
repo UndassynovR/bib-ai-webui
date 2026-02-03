@@ -57,7 +57,6 @@
       rows="1"
       oninput={autoResize}
       onkeydown={handleKeyDown}
-      autofocus
       {disabled}
     ></textarea>
 

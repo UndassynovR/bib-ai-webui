@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { fade, fly } from 'svelte/transition';
-  import { Bookmark, X, Calendar, Building, MapPin, Hash, Tag, BookOpenText, Loader2, AlertCircle, AlertTriangle } from '@lucide/svelte';
+  import { Bookmark, Calendar, Building } from '@lucide/svelte';
   import { bookmarkStore } from '$lib/stores/bookmarkStore.svelte';
   import { i18n } from '$lib/stores/i18nStore.svelte';
   import { onMount } from 'svelte';
+  import BookDetailPopup from '$lib/components/BookDetailPopup.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -44,12 +44,6 @@
     showOverlay = false;
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && showOverlay) {
-      closeOverlay();
-    }
-  }
-
   onMount(() => {
     bookmarkStore.initialize();
   });
@@ -58,8 +52,6 @@
 <svelte:head>
   <title>{i18n.t('bookmarks.title')}</title>
 </svelte:head>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div class="bookmarks-page">
   <div class="page-header">
@@ -81,34 +73,43 @@
         <div
           class="book-card"
           onclick={() => handleBookClick(book)}
-          title={book.title}
         >
+          <!-- Bookmark Button -->
           <button
-            class="bookmark-wrapper"
+            class="bookmark-button"
             onclick={(e) => handleBookmarkClick(book.DOC_ID, e)}
             aria-label={i18n.t('bookmarks.remove')}
           >
-            <Bookmark 
+            <Bookmark
               size={20}
               fill="currentColor"
             />
           </button>
-          
-          <h3 class="book-title" title={book.title}>{book.title}</h3>
-          
-          <div class="authors-row">
-            <p class="authors" title={getAuthors(book) !== i18n.t('bookmarks.authorNotSpecified') ? `${i18n.t('bookmarks.author')}: ${getAuthors(book)}` : i18n.t('bookmarks.authorNotSpecified')}>
-              {getAuthors(book)}
-            </p>
-          </div>
-          
-          <div class="details-row">
-            <span class="detail-item" title={book.year ? i18n.t('bookmarks.yearTitle', { year: book.year }) : i18n.t('bookmarks.yearMissing')}>
-              {book.year || '-'}
-            </span>
-            <span class="detail-item" title={book.publisher ? i18n.t('bookmarks.publisherTitle', { publisher: book.publisher }) : i18n.t('bookmarks.publisherMissing')}>
-              {book.publisher || '-'}
-            </span>
+
+          <div class="book-info-compact">
+            <div class="book-content">
+              <h3 class="book-title">
+                {book.title || i18n.t('bookmarks.untitled')}
+              </h3>
+              <p class="book-author">
+                {getAuthors(book)}
+              </p>
+            </div>
+            
+            <div class="book-meta">
+              {#if book.year}
+                <span class="meta-item">
+                  <Calendar size={16} />
+                  {book.year}
+                </span>
+              {/if}
+              {#if book.publisher}
+                <span class="meta-item">
+                  <Building size={16} />
+                  {book.publisher}
+                </span>
+              {/if}
+            </div>
           </div>
         </div>
       {/each}
@@ -127,149 +128,7 @@
 
 <!-- Book Detail Popup -->
 {#if showOverlay && selectedBook}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div 
-    class="popup-backdrop"
-    onclick={closeOverlay}
-    transition:fade={{ duration: 200 }}
-    role="presentation"
-  >
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div 
-      class="popup-modal"
-      onclick={(e) => e.stopPropagation()}
-      transition:fly={{ y: 20, duration: 300 }}
-      role="dialog"
-      aria-modal="true"
-      tabindex="-1"
-    >
-      <!-- Header -->
-      <div class="modal-header">
-        <div class="flex-1 pr-4">
-          <h2 class="modal-title">
-            {selectedBook.title || i18n.t('bookmarks.untitled')}
-          </h2>
-          <p class="modal-subtitle">{getAuthors(selectedBook)}</p>
-        </div>
-        <div class="header-actions">
-          <button
-            onclick={(e) => handleBookmarkClick(selectedBook.DOC_ID, e)}
-            class="bookmark-button"
-            aria-label={i18n.t('bookmarks.remove')}
-          >
-            <Bookmark 
-              size={24}
-              fill="currentColor"
-            />
-          </button>
-          <button
-            onclick={closeOverlay}
-            class="close-button"
-            aria-label={i18n.t('bookmarks.close')}
-          >
-            <X size={24} />
-          </button>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="modal-content">
-        <!-- Description Section -->
-        <div>
-          <h3 class="section-title">
-            <BookOpenText size={20} />
-            {i18n.t('bookmarks.description')}
-          </h3>
-          
-          {#await fetch(`/api/descriptions/${selectedBook.DOC_ID}`).then(r => r.json())}
-            <div class="loading-state">
-              <Loader2 class="spinner" size={32} />
-              <span class="loading-text">{i18n.t('bookmarks.loadingDescription')}</span>
-            </div>
-          {:then data}
-            {#if data.failed || !data.description}
-              <div class="warning-box">
-                <AlertTriangle size={20} />
-                <p>{i18n.t('bookmarks.descriptionUnavailable')}</p>
-              </div>
-            {:else}
-              <p class="description-text">{data.description}</p>
-            {/if}
-          {:catch error}
-            <div class="error-box">
-              <AlertCircle size={20} />
-              <p>{i18n.t('bookmarks.descriptionError')}</p>
-            </div>
-          {/await}
-        </div>
-
-        <!-- Book Details Grid -->
-        <div class="details-section">
-          <h3 class="section-title-secondary">{i18n.t('bookmarks.bookInfo')}</h3>
-          <div class="details-grid">
-            
-            {#if selectedBook.year}
-              <div class="detail-item">
-                <Calendar size={20} />
-                <div>
-                  <p class="detail-label">{i18n.t('bookmarks.yearOfPublication')}</p>
-                  <p class="detail-value">{selectedBook.year}</p>
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedBook.publisher}
-              <div class="detail-item">
-                <Building size={20} />
-                <div>
-                  <p class="detail-label">{i18n.t('bookmarks.publisher')}</p>
-                  <p class="detail-value">{selectedBook.publisher}</p>
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedBook.publication_place}
-              <div class="detail-item">
-                <MapPin size={20} />
-                <div>
-                  <p class="detail-label">{i18n.t('bookmarks.publicationPlace')}</p>
-                  <p class="detail-value">{selectedBook.publication_place}</p>
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedBook.isbn}
-              <div class="detail-item">
-                <Hash size={20} />
-                <div>
-                  <p class="detail-label">ISBN</p>
-                  <p class="detail-value isbn">{selectedBook.isbn}</p>
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedBook.keywords}
-              <div class="detail-item keywords-item">
-                <Tag size={20} />
-                <div class="flex-1">
-                  <p class="detail-label">{i18n.t('bookmarks.keywords')}</p>
-                  <div class="keywords-container">
-                    {#each selectedBook.keywords.split(',') as keyword}
-                      <span class="keyword-tag">
-                        {keyword.trim()}
-                      </span>
-                    {/each}
-                  </div>
-                </div>
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <BookDetailPopup book={selectedBook} onClose={closeOverlay} />
 {/if}
 
 <style>
@@ -292,7 +151,7 @@
   .books-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   /* Book Card Styles */
@@ -307,10 +166,9 @@
     text-align: left;
     display: flex;
     flex-direction: column;
-    padding: 1.25rem;
-    gap: 0.75rem;
+    min-height: 150px;
+    padding: 0;
     position: relative;
-    min-height: 180px;
   }
 
   .book-card:hover {
@@ -319,7 +177,7 @@
     transform: translateY(-2px);
   }
 
-  .bookmark-wrapper {
+  .bookmark-button {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -335,44 +193,55 @@
     z-index: 1;
   }
 
-  .bookmark-wrapper:hover {
+  .bookmark-button:hover {
     color: #dc2626;
     transform: scale(1.1);
   }
 
+  .book-info-compact {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .book-content {
+    min-width: 0;
+    padding-right: 2rem;
+  }
+
   .book-title {
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: var(--text-primary);
+    margin-bottom: 0.375rem;
     line-height: 1.4;
-    padding-right: 2rem;
-    margin: 0;
   }
 
-  .authors-row {
-    margin-bottom: 0.5rem;
-  }
-
-  .authors {
-    font-size: 0.9rem;
+  .book-author {
+    font-size: 0.875rem;
     color: var(--text-secondary);
     line-height: 1.4;
     margin: 0;
   }
 
-  .details-row {
+  .book-meta {
     display: flex;
-    gap: 1rem;
-    font-size: 0.85rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.813rem;
     color: var(--text-tertiary);
-    margin-top: auto;
   }
 
-  .detail-item {
-    padding: 0.35rem 0.75rem;
-    background: var(--bg-tertiary);
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .meta-item :global(svg) {
+    color: var(--text-tertiary);
   }
 
   .empty-state {
@@ -422,251 +291,6 @@
     background: #3d6ba8;
   }
 
-  /* Popup Styles */
-  .popup-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-
-  .popup-modal {
-    background: var(--bg-primary);
-    border-radius: 12px;
-    box-shadow: 0 20px 40px var(--shadow-lg);
-    max-width: 48rem;
-    width: 100%;
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-color);
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .modal-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .modal-subtitle {
-    color: var(--text-secondary);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .bookmark-button {
-    background: transparent;
-    border: none;
-    color: #4a7dc2;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-  }
-
-  .bookmark-button:hover {
-    color: #dc2626;
-    background: var(--bg-secondary);
-  }
-
-  .close-button {
-    background: transparent;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-  }
-
-  .close-button:hover {
-    color: var(--text-secondary);
-    background: var(--bg-secondary);
-  }
-
-  .modal-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .section-title :global(svg) {
-    color: #4a7dc2;
-  }
-
-  .loading-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  :global(.spinner) {
-    animation: spin 1s linear infinite;
-    color: #4a7dc2;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .loading-text {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-  }
-
-  .warning-box {
-    display: flex;
-    align-items: start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #fef3cd;
-    border: 1px solid #f0d896;
-    border-radius: 8px;
-    color: #8a6d3b;
-  }
-
-  .warning-box :global(svg) {
-    flex-shrink: 0;
-    margin-top: 0.125rem;
-  }
-
-  .error-box {
-    display: flex;
-    align-items: start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #f8d7da;
-    border: 1px solid #f1b0b7;
-    border-radius: 8px;
-    color: #842029;
-  }
-
-  .error-box :global(svg) {
-    flex-shrink: 0;
-    margin-top: 0.125rem;
-  }
-
-  .description-text {
-    color: var(--text-primary);
-    line-height: 1.7;
-  }
-
-  .details-section {
-    border-top: 1px solid var(--border-color);
-    padding-top: 1.5rem;
-  }
-
-  .section-title-secondary {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-  }
-
-  .details-grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 1rem;
-  }
-
-  @media (min-width: 768px) {
-    .details-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  .detail-item {
-    display: flex;
-    align-items: start;
-    gap: 0.75rem;
-  }
-
-  .keywords-item {
-    grid-column: 1 / -1;
-  }
-
-  .detail-item :global(svg) {
-    color: var(--text-tertiary);
-    flex-shrink: 0;
-  }
-
-  .detail-label {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
-  }
-
-  .detail-value {
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  .detail-value.isbn {
-    font-family: monospace;
-  }
-
-  .keywords-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-
-  .keyword-tag {
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    border-radius: 9999px;
-    border: 1px solid var(--border-color);
-  }
-
-  :global(body:has(.popup-backdrop)) {
-    overflow: hidden;
-  }
-
   @media (max-width: 768px) {
     .bookmarks-page {
       padding: 1rem;
@@ -674,10 +298,6 @@
 
     .books-container {
       grid-template-columns: 1fr;
-    }
-    
-    .book-card {
-      padding: 1rem;
     }
 
     .empty-state {
