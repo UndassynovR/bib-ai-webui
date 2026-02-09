@@ -77,6 +77,12 @@
       console.error('Logout failed:', error);
     }
   }
+
+  function handleMobileClick() {
+    if (!isWideScreen && sidebarOpen) {
+      onToggle();
+    }
+  }
   
   let displayName = $derived(
     user?.is_guest 
@@ -121,7 +127,7 @@
         class="sidebar-item"
         aria-label={i18n.t('sidebar.newChat')}
         data-tooltip={i18n.t('sidebar.newChat')}
-        onclick={goHome}
+        onclick={() => { goHome(); handleMobileClick(); }}
       >
         <div class="icon-wrapper">
           <MessageCirclePlus size={20} />
@@ -135,7 +141,7 @@
         class="sidebar-item"
         aria-label={i18n.t('sidebar.searchChats')}
         data-tooltip={i18n.t('sidebar.searchChats')}
-        onclick={() => showSearch = true}
+        onclick={() => { showSearch = true; handleMobileClick(); }}
       >
         <div class="icon-wrapper">
           <Search size={20} />
@@ -149,7 +155,7 @@
         class="sidebar-item"
         aria-label={i18n.t('sidebar.bookmarks')}
         data-tooltip={i18n.t('sidebar.bookmarks')}
-        onclick={goToBookmarks}
+        onclick={() => { goToBookmarks(); handleMobileClick(); }}
       >
         <div class="icon-wrapper">
           <BookMarked size={20} />
@@ -182,7 +188,7 @@
           class="sidebar-item admin-btn"
           aria-label="Admin dashboard"
           data-tooltip="Admin dashboard"
-          onclick={goToAdminDashboard}
+          onclick={() => { goToAdminDashboard(); handleMobileClick(); }}
         >
           <div class="icon-wrapper">
             <Wrench size={20} />
@@ -197,7 +203,7 @@
         class="sidebar-item settings-btn"
         aria-label={i18n.t('sidebar.settings')}
         data-tooltip={i18n.t('sidebar.settings')}
-        onclick={goToSettings}
+        onclick={() => { goToSettings(); handleMobileClick(); }}
       >
         <div class="icon-wrapper">
           <Settings size={20} />
@@ -219,7 +225,7 @@
             ? i18n.t('sidebar.guestAccount')
             : i18n.t('sidebar.accountSettings')
         }
-        onclick={handleAccountClick}
+        onclick={() => { handleAccountClick(); handleMobileClick(); }}
       >
         <div class="icon-wrapper avatar">
           <CircleUser size={20} />

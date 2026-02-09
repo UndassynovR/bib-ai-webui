@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
 
   let { children } = $props();
 
@@ -9,8 +10,8 @@
   }
 
   const menu = [
-    { name: 'Dashboard', path: 'dashboard' },
-    { name: 'Users', path: 'users' }
+    { name: i18n.t('dashboard.title'), path: 'dashboard' },
+    { name: i18n.t('dashboard.users.title'), path: 'users' }
   ];
 </script>
 

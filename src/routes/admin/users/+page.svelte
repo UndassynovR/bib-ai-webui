@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { i18n } from '$lib/stores/i18nStore.svelte';
 
   type User = {
     id: string;
@@ -66,7 +67,7 @@
 </script>
 
 <div class="users-page">
-  <h1>Users</h1>
+  <h1>{i18n.t('dashboard.users.title')}</h1>
   
   {#if isLoading}
     <div class="loading">Loading...</div>

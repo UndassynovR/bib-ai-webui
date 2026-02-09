@@ -199,7 +199,7 @@ export default {
     },
     
     conversations: {
-      title: 'Разговоры',
+      title: 'Чаты',
       description: 'Статистика чатов',
       total: 'Всего',
       today: 'Сегодня',
