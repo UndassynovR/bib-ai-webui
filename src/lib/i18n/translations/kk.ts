@@ -33,6 +33,7 @@ export default {
     settings: 'Баптаулар',
     
     account: 'Есептік жазба',
+	guest: 'Қонақ',
     accountSettings: 'Есептік жазба баптаулары',
     guestAccount: 'Қонақ есептік жазбасы',
   },
@@ -50,6 +51,7 @@ export default {
     loginSubtitle: 'Сөйлесулерге кез келген құрылғыдан кіру үшін жүйеге кіріңіз',
     signupSubtitle: 'Сөйлесулерді сақтау үшін тіркеліңіз',
     
+	username: 'Пайдаланушы аты',
     email: 'Email',
     password: 'Құпия сөз',
     
@@ -101,12 +103,9 @@ export default {
     changePassword: 'Құпия сөзді өзгерту',
     deleteAccount: 'Есептік жазбаны жою',
     deleteAccountWarning: 'Бұл әрекетті болдырмауға болмайды',
-    guestAccount: 'Қонақ есептік жазбасы',
-    registeredAccount: 'Тіркелген есептік жазба',
     upgradeAccount: 'Сөйлесулерді сақтау үшін толық есептік жазбаға жаңартыңыз',
     
     accountInformation: 'Есептік жазба туралы ақпарат',
-    accountType: 'Есептік жазба түрі',
     
     accountActions: 'Есептік жазба әрекеттері',
     accountActionsDescription: 'Сеанс пен есептік жазбаға қол жетімділікті басқару',

@@ -9,9 +9,13 @@
     goto(`/settings/${path}`);
   }
 
+  let user = $derived($page.data.user);
+  
   let menu = $derived([
     { name: i18n.t('settings.general'), path: 'general' },
-    { name: i18n.t('settings.account'), path: 'account' }
+    ...(user && !user.is_guest 
+      ? [{ name: i18n.t('settings.account'), path: 'account' }] 
+      : [])
   ]);
 </script>
 

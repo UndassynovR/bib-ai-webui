@@ -1,14 +1,14 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { LogOut, IdCard, Mail } from '@lucide/svelte';
+  import { LogOut, Mail } from '@lucide/svelte';
   import { i18n } from '$lib/stores/i18nStore.svelte';
-
+ 
   let user = $derived($page.data.user);
   let isLoggingOut = $state(false);
-
+ 
   async function handleLogout() {
     if (isLoggingOut) return;
-    
+     
     isLoggingOut = true;
     try {
       await fetch('/api/auth', { method: 'DELETE' });
@@ -36,18 +36,6 @@
         </div>
         <div class="info-value">
           {user?.email || i18n.t('settings.notSet')}
-        </div>
-      </div>
-
-      <div class="info-item">
-        <div class="info-label">
-          <IdCard size={18} />
-          <span>{i18n.t('settings.accountType')}</span>
-        </div>
-        <div class="info-value">
-          {user?.is_guest
-            ? i18n.t('settings.guestAccount')
-            : i18n.t('settings.registeredAccount')}
         </div>
       </div>
     </div>

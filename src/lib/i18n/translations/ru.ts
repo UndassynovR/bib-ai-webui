@@ -33,6 +33,7 @@ export default {
     settings: 'Настройки',
   
     account: 'Аккаунт',
+	guest: 'Гость',
     accountSettings: 'Настройки аккаунта',
     guestAccount: 'Гостевой аккаунт',
   },
@@ -50,6 +51,7 @@ export default {
     loginSubtitle: 'Войдите, чтобы получить доступ к чатам с любого устройства',
     signupSubtitle: 'Зарегистрируйтесь, чтобы сохранить чаты навсегда',
   
+   username: 'Имя пользователя',
     email: 'Email',
     password: 'Пароль',
   
@@ -101,12 +103,9 @@ export default {
     changePassword: 'Изменить пароль',
     deleteAccount: 'Удалить аккаунт',
     deleteAccountWarning: 'Это действие нельзя отменить',
-    guestAccount: 'Гостевой аккаунт',
-    registeredAccount: 'Зарегистрированный аккаунт',
     upgradeAccount: 'Обновите до полного аккаунта, чтобы сохранять чаты',
   
     accountInformation: 'Информация об аккаунте',
-    accountType: 'Тип аккаунта',
   
     accountActions: 'Действия с аккаунтом',
     accountActionsDescription: 'Управление сессией и доступом к аккаунту',

@@ -33,6 +33,7 @@ export default {
     settings: 'Settings',
   
     account: 'Account',
+	guest: 'Guest',
     accountSettings: 'Account settings',
     guestAccount: 'Guest account',
   },
@@ -50,6 +51,7 @@ export default {
     loginSubtitle: 'Sign in to access your chats from any device',
     signupSubtitle: 'Register to save your chats permanently',
   
+	username: 'Username',
     email: 'Email',
     password: 'Password',
   
@@ -101,12 +103,9 @@ export default {
     changePassword: 'Change Password',
     deleteAccount: 'Delete Account',
     deleteAccountWarning: 'This action cannot be undone',
-    guestAccount: 'Guest Account',
-    registeredAccount: 'Registered Account',
     upgradeAccount: 'Upgrade to a full account to save your chats',
   
     accountInformation: 'Account Information',
-    accountType: 'Account Type',
   
     accountActions: 'Account Actions',
     accountActionsDescription: 'Manage your session and account access',

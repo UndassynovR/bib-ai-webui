@@ -118,7 +118,7 @@
             id="username"
             type="text"
             bind:value={username}
-            placeholder="username"
+            placeholder={i18n.t('auth.username')}
             required
             disabled={loading}
           />

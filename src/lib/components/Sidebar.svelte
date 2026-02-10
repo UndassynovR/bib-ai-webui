@@ -86,7 +86,7 @@
   
   let displayName = $derived(
     user?.is_guest 
-      ? 'Guest' 
+      ? i18n.t('sidebar.guest')
       : user?.name || user?.email || 'User'
   );
 </script>
