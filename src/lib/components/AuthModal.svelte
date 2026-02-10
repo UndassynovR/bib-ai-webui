@@ -2,87 +2,80 @@
   import { onMount } from 'svelte';
   import { X } from '@lucide/svelte';
   import { i18n } from '$lib/stores/i18nStore.svelte';
-  
+
   interface Props {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
   }
-  
+
   let { isOpen, onClose, onSuccess }: Props = $props();
-  
-  let mode = $state<'login' | 'register'>('login');
-  let email = $state('');
+
+  let username = $state('');
   let password = $state('');
   let error = $state('');
   let loading = $state(false);
   let successMessage = $state('');
-  
+
   function reset() {
-    email = '';
+    username = '';
     password = '';
     error = '';
     successMessage = '';
     loading = false;
   }
-  
-  function switchMode() {
-    mode = mode === 'login' ? 'register' : 'login';
-    reset();
-  }
-  
+
   async function handleSubmit(e: Event) {
     e.preventDefault();
     error = '';
     successMessage = '';
     loading = true;
-    
+
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: mode,
-          email,
+          action: 'login',
+          username,
           password,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         error = data.error || 'Something went wrong';
         loading = false;
         return;
       }
-      
+
       if (data.message) {
         successMessage = data.message;
       }
-      
+
       // Success! Reload page to update user state
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-     
     } catch (err) {
       error = 'Network error. Please try again.';
       loading = false;
     }
   }
-  
+
   function handleOverlayClick(e: MouseEvent) {
     if (e.target === e.currentTarget) {
       onClose();
     }
   }
-  
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       onClose();
     }
   }
-  
+
   $effect(() => {
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
@@ -94,7 +87,7 @@
 {#if isOpen}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div 
+  <div
     class="modal-overlay"
     role="dialog"
     aria-modal="true"
@@ -106,17 +99,9 @@
         <X size={20} />
       </button>
 
-      <h2>
-        {mode === 'login'
-          ? i18n.t('auth.loginHeading')
-          : i18n.t('auth.signupHeading')}
-      </h2>
+      <h2>{i18n.t('auth.loginHeading')}</h2>
 
-      <p class="subtitle">
-        {mode === 'login'
-          ? i18n.t('auth.loginSubtitle')
-          : i18n.t('auth.signupSubtitle')}
-      </p>
+      <p class="subtitle">{i18n.t('auth.loginSubtitle')}</p>
 
       {#if error}
         <div class="message error">{error}</div>
@@ -128,12 +113,12 @@
 
       <form onsubmit={handleSubmit}>
         <div class="form-group">
-          <label for="email">{i18n.t('auth.email')}</label>
+          <label for="username">{i18n.t('auth.username')}</label>
           <input
-            id="email"
-            type="email"
-            bind:value={email}
-            placeholder="your@email.com"
+            id="username"
+            type="text"
+            bind:value={username}
+            placeholder="username"
             required
             disabled={loading}
           />
@@ -153,30 +138,9 @@
         </div>
 
         <button type="submit" class="submit-btn" disabled={loading}>
-          {loading
-            ? i18n.t('auth.pleaseWait')
-            : mode === 'login'
-              ? i18n.t('auth.loginButton')
-              : i18n.t('auth.signupButton')}
+          {loading ? i18n.t('auth.pleaseWait') : i18n.t('auth.loginButton')}
         </button>
       </form>
-
-      <div class="switch">
-        {mode === 'login'
-          ? i18n.t('auth.dontHaveAccount')
-          : i18n.t('auth.alreadyHaveAccount')}
-        
-        <button
-          type="button"
-          class="link-btn"
-          onclick={switchMode}
-          disabled={loading}
-        >
-          {mode === 'login'
-            ? i18n.t('auth.signup')
-            : i18n.t('auth.login')}
-        </button>
-      </div>
     </div>
   </div>
 {/if}
@@ -316,32 +280,5 @@
     background: var(--bg-tertiary);
     cursor: not-allowed;
     opacity: 0.6;
-  }
-
-  .switch {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
-
-  .link-btn {
-    background: none;
-    border: none;
-    color: #4a7dc2;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 0;
-    margin-left: 0.25rem;
-  }
-
-  .link-btn:hover:not(:disabled) {
-    color: #3d6ba8;
-  }
-
-  .link-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 </style>
