@@ -9,7 +9,7 @@ import { bookDescriptions } from '$lib/server/db/pg/schema';
 import { DOC_VIEW } from '$lib/server/db/mssql/schema';
 import { eq } from 'drizzle-orm';
 import { error, json } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { getAppConfig } from '$lib/server/config';
 
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { ChatOpenAI } from "@langchain/openai";
@@ -17,7 +17,6 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { PDFParse } from 'pdf-parse';
 
-const OPENAI_API_KEY = env.OPENAI_API_KEY;
 
 interface Book {
   author?: string;
@@ -33,7 +32,7 @@ interface Book {
 }
 
 const llm = new ChatOpenAI({
-  apiKey: OPENAI_API_KEY,
+  apiKey: config.OPENAI_API_KEY,
   temperature: 0,
   modelName: "gpt-4o-mini",
 });

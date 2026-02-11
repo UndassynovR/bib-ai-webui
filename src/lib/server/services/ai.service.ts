@@ -1,9 +1,9 @@
-import { env } from '$env/dynamic/private';
+import { getAppConfig } from '$lib/server/config';
 import { ChatOpenAI } from "@langchain/openai";
 import { createAgent } from "langchain";
 import { searchBooksTool } from "$lib/server/services/tools/searchBooks";
 
-const OPENAI_API_KEY = env.OPENAI_API_KEY;
+const config = await getAppConfig();
 
 interface Message {
   role: string;
@@ -16,7 +16,7 @@ interface StreamChunk {
 }
 
 const model = new ChatOpenAI({
-  apiKey: OPENAI_API_KEY,
+  apiKey: config.OPENAI_API_KEY,
   model: "gpt-4o",
   temperature: 0.1,
   streaming: true,
@@ -189,7 +189,7 @@ export async function generateConversationTitle(message: string): Promise<string
   
   try {
     const titleModel = new ChatOpenAI({
-      apiKey: OPENAI_API_KEY,
+      apiKey: config.OPENAI_API_KEY,
       model: "gpt-4o-mini",
       temperature: 0.7,
       maxTokens: 30, // This is correct for LangChain

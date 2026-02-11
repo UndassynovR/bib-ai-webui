@@ -4,42 +4,45 @@ import { getDb } from '$lib/server/db/pg';
 import { users, sessions } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 import { Client } from 'ldapts';
-import { readdirSync } from 'fs';
-import { join } from 'path';
-import { env } from '$env/dynamic/private';
+import { getAppConfig } from '$lib/server/config';
 
-const LDAP_LOGIN = env.LDAP_LOGIN;
-const LDAP_PASSWORD = env.LDAP_PASSWORD;
-const LDAP_URL = env.LDAP_URL;
+// 1. Updated path to match your settings handler
+const CERT_FILE_PATH = '/app/data/settings/ldap-cert.crt';
+
+const config = await getAppConfig();
+const LDAP_URL = config.LDAP_URL;
+const LDAP_BASE_DN = config.LDAP_BASE_DN;
+const LDAP_ADMIN_LOGIN = config.LDAP_ADMIN_LOGIN;
+const LDAP_ADMIN_PASSWORD = config.LDAP_ADMIN_PASSWORD;
 
 const db = getDb();
-const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
+const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000;
 
-// LDAP client - will be initialized on first use
 let client: Client | null = null;
 
 async function getLDAPClient() {
   if (client) return client;
 
-  const certDir = '/usr/local/share/ca-certificates';
-  const files = readdirSync(certDir);
-  const certFile = files.find(f => f.endsWith('.crt'));
+  let tlsOptions: any = { rejectUnauthorized: false }; // Fallback if no cert exists
 
-  if (!certFile) {
-    throw new Error('No .crt file found in ' + certDir);
+  // 2. Check if the certificate exists using Bun.file
+  const certFile = Bun.file(CERT_FILE_PATH);
+  const exists = await certFile.exists();
+
+  if (exists) {
+    const caCert = await certFile.text();
+    tlsOptions = {
+      ca: [caCert],
+      rejectUnauthorized: true 
+    };
+    console.log('LDAP Client: Using custom certificate from settings.');
+  } else {
+    console.warn('LDAP Client: No certificate found at path, proceeding without CA verification.');
   }
-
-  const certPath = join(certDir, certFile);
-
-  // Read CA file using Bun
-  const caCertFile = Bun.file(certPath);
-  const caCert = await caCertFile.text();
 
   client = new Client({
     url: LDAP_URL,
-    tlsOptions: {
-      ca: [caCert]
-    }
+    tlsOptions: tlsOptions
   });
 
   return client;
@@ -55,15 +58,15 @@ function normalizeUsername(input: string): string {
 
 async function authenticateLDAP(username: string, password: string) {
   const client = await getLDAPClient();
-  const baseDN = 'ou=Univer,dc=kaztbu,dc=edu,dc=kz';
+  // const baseDN = 'ou=Univer,dc=kaztbu,dc=edu,dc=kz';
   const filter = `(sAMAccountName=${username})`;
 
   try {
     // Bind as service account
-    await client.bind(LDAP_LOGIN, LDAP_PASSWORD);
+    await client.bind(LDAP_ADMIN_LOGIN, LDAP_ADMIN_PASSWORD);
 
     // Search for the user
-    const { searchEntries } = await client.search(baseDN, {
+    const { searchEntries } = await client.search(LDAP_BASE_DN, {
       scope: 'sub',
       filter
     });

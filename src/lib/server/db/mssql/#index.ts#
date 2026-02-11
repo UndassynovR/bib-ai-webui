@@ -1,0 +1,8 @@
+import { getAppConfig } from '$lib/server/config';
+import { drizzle } from "drizzle-orm/node-mssql";
+
+const config = await getAppConfig();
+
+export function getMssqlDb() {
+  return drizzle("mssql://marc:marc@10.0.1.16/marc?encrypt=true&trustServerCertificate=true");
+}
