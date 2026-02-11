@@ -10,6 +10,7 @@ import { env } from '$env/dynamic/private';
 
 const LDAP_LOGIN = env.LDAP_LOGIN;
 const LDAP_PASSWORD = env.LDAP_PASSWORD;
+const LDAP_URL = env.LDAP_URL;
 
 const db = getDb();
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -19,34 +20,37 @@ let client: Client | null = null;
 
 async function getLDAPClient() {
   if (client) return client;
-  
-  // List what's in the certs directory
+
   const certDir = '/usr/local/share/ca-certificates';
-  console.log('Contents of cert directory:', readdirSync(certDir));
-  
-  // Find the .crt file
   const files = readdirSync(certDir);
   const certFile = files.find(f => f.endsWith('.crt'));
-  
+
   if (!certFile) {
     throw new Error('No .crt file found in ' + certDir);
   }
-  
+
   const certPath = join(certDir, certFile);
-  console.log('Using certificate:', certPath);
-  
+
   // Read CA file using Bun
   const caCertFile = Bun.file(certPath);
   const caCert = await caCertFile.text();
 
   client = new Client({
-    url: 'ldaps://dc1.kaztbu.edu.kz:636',
+    url: LDAP_URL,
     tlsOptions: {
       ca: [caCert]
     }
   });
-  
+
   return client;
+}
+
+function normalizeUsername(input: string): string {
+  // If input ends with @kaztbu.edu.kz, strip it to get the username
+  if (input.endsWith('@kaztbu.edu.kz')) {
+    return input.replace('@kaztbu.edu.kz', '');
+  }
+  return input;
 }
 
 async function authenticateLDAP(username: string, password: string) {
@@ -57,7 +61,7 @@ async function authenticateLDAP(username: string, password: string) {
   try {
     // Bind as service account
     await client.bind(LDAP_LOGIN, LDAP_PASSWORD);
-    
+
     // Search for the user
     const { searchEntries } = await client.search(baseDN, {
       scope: 'sub',
@@ -103,9 +107,14 @@ async function createSession(userId: string) {
   return { token, expiresAt };
 }
 
+function determineRole(dn: string): 'admin' | 'user' {
+  // Check if the DN contains OU=IT
+  return dn.includes('OU=IT') ? 'admin' : 'user';
+}
+
 export const POST: RequestHandler = async ({ request, cookies }) => {
   try {
-    const { action, username, password } = await request.json();
+    const { action, username: rawUsername, password } = await request.json();
 
     if (action === 'guest') {
       const [guestUser] = await db.insert(users).values({ is_guest: true }).returning();
@@ -125,12 +134,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     if (action === 'login') {
-      if (!username || !password) {
+      if (!rawUsername || !password) {
         return new Response(JSON.stringify({ error: 'Username and password are required' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
+
+      // Normalize username - strip @kaztbu.edu.kz if present
+      const username = normalizeUsername(rawUsername);
 
       const ldapUser = await authenticateLDAP(username, password);
 
@@ -144,26 +156,55 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       // Map LDAP info
       const email = (ldapUser.mail as string) || `${username}@kaztbu.edu.kz`;
       const name = (ldapUser.displayName as string) || username;
+      const role = determineRole(ldapUser.dn as string);
 
-      // Check if a user exists in DB
+      // Delete any existing guest account for this session
+      const currentSessionToken = cookies.get('session');
+      if (currentSessionToken) {
+        const [currentSession] = await db
+          .select()
+          .from(sessions)
+          .where(eq(sessions.token, currentSessionToken))
+          .limit(1);
+
+        if (currentSession) {
+          const [currentUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, currentSession.user_id))
+            .limit(1);
+
+          // If current user is a guest, delete their session and account
+          if (currentUser?.is_guest) {
+            await db.delete(sessions).where(eq(sessions.user_id, currentUser.id));
+            await db.delete(users).where(eq(users.id, currentUser.id));
+            console.log('Deleted guest account:', currentUser.id);
+          }
+        }
+      }
+
+      // Check if a registered user exists in DB
       const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
       let userId: string;
 
       if (existing) {
-        // Promote guest if needed
-        if (existing.is_guest) {
-          await db
-            .update(users)
-            .set({ name, is_guest: false, updated_at: new Date() })
-            .where(eq(users.id, existing.id));
-        }
+        // Update user info including role
+        await db
+          .update(users)
+          .set({ 
+            name, 
+            role, 
+            is_guest: false, 
+            updated_at: new Date() 
+          })
+          .where(eq(users.id, existing.id));
         userId = existing.id;
       } else {
-        // Create new LDAP-backed user
+        // Create new LDAP-backed user with role
         const [newUser] = await db
           .insert(users)
-          .values({ email, name, is_guest: false })
+          .values({ email, name, role, is_guest: false })
           .returning();
         userId = newUser.id;
       }
@@ -179,7 +220,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       });
 
       return new Response(
-        JSON.stringify({ user: { id: userId, email, name, is_guest: false } }),
+        JSON.stringify({ user: { id: userId, email, name, role, is_guest: false } }),
         { headers: { 'Content-Type': 'application/json' } }
       );
     }

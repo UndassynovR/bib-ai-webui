@@ -75,7 +75,7 @@
     {#each users as user (user.id)}
       <div class="user-card">
         <button class="user-summary" on:click={() => toggleExpand(user.id)}>
-          <span>{user.email || `Guest ${user.id.slice(0, 8)}`}</span>
+          <span>{user.email || `Guest ${user.id}`}</span>
           <span>{expanded[user.id] ? '▲' : '▼'}</span>
         </button>
 

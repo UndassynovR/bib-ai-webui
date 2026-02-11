@@ -11,7 +11,8 @@
 
   const menu = [
     { name: i18n.t('dashboard.title'), path: 'dashboard' },
-    { name: i18n.t('dashboard.users.title'), path: 'users' }
+    { name: i18n.t('dashboard.users.title'), path: 'users' },
+    { name: i18n.t('dashboard.settings.title'), path: 'settings' }
   ];
 </script>
 
@@ -47,7 +48,6 @@
     flex-direction: column;
     gap: 0.25rem;
     flex-shrink: 0;
-    /* background: var(--bg-secondary); */
   }
 
   .menu-item {
