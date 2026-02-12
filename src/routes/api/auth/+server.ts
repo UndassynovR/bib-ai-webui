@@ -6,7 +6,6 @@ import { eq } from 'drizzle-orm';
 import { Client } from 'ldapts';
 import { getAppConfig } from '$lib/server/config';
 
-// 1. Updated path to match your settings handler
 const CERT_FILE_PATH = '/app/data/settings/ldap-cert.crt';
 
 const config = await getAppConfig();
@@ -20,12 +19,22 @@ const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000;
 
 let client: Client | null = null;
 
+// Password hashing helpers
+async function hashPassword(password: string): Promise<string> {
+  const bcrypt = await import('bcrypt');
+  return bcrypt.hash(password, 10);
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const bcrypt = await import('bcrypt');
+  return bcrypt.compare(password, hash);
+}
+
 async function getLDAPClient() {
   if (client) return client;
 
-  let tlsOptions: any = { rejectUnauthorized: false }; // Fallback if no cert exists
+  let tlsOptions: any = { rejectUnauthorized: false };
 
-  // 2. Check if the certificate exists using Bun.file
   const certFile = Bun.file(CERT_FILE_PATH);
   const exists = await certFile.exists();
 
@@ -33,7 +42,7 @@ async function getLDAPClient() {
     const caCert = await certFile.text();
     tlsOptions = {
       ca: [caCert],
-      rejectUnauthorized: true 
+      rejectUnauthorized: true
     };
     console.log('LDAP Client: Using custom certificate from settings.');
   } else {
@@ -49,7 +58,6 @@ async function getLDAPClient() {
 }
 
 function normalizeUsername(input: string): string {
-  // If input ends with @kaztbu.edu.kz, strip it to get the username
   if (input.endsWith('@kaztbu.edu.kz')) {
     return input.replace('@kaztbu.edu.kz', '');
   }
@@ -58,14 +66,11 @@ function normalizeUsername(input: string): string {
 
 async function authenticateLDAP(username: string, password: string) {
   const client = await getLDAPClient();
-  // const baseDN = 'ou=Univer,dc=kaztbu,dc=edu,dc=kz';
   const filter = `(sAMAccountName=${username})`;
 
   try {
-    // Bind as service account
     await client.bind(LDAP_ADMIN_LOGIN, LDAP_ADMIN_PASSWORD);
 
-    // Search for the user
     const { searchEntries } = await client.search(LDAP_BASE_DN, {
       scope: 'sub',
       filter
@@ -78,7 +83,6 @@ async function authenticateLDAP(username: string, password: string) {
 
     console.log('User found:', searchEntries[0].dn);
 
-    // Try binding as the user
     try {
       await client.bind(searchEntries[0].dn as string, password);
       console.log('Authentication successful');
@@ -111,13 +115,12 @@ async function createSession(userId: string) {
 }
 
 function determineRole(dn: string): 'admin' | 'user' {
-  // Check if the DN contains OU=IT
   return dn.includes('OU=IT') ? 'admin' : 'user';
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   try {
-    const { action, username: rawUsername, password } = await request.json();
+    const { action, username: rawUsername, email, password } = await request.json();
 
     if (action === 'guest') {
       const [guestUser] = await db.insert(users).values({ is_guest: true }).returning();
@@ -137,82 +140,279 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     if (action === 'login') {
-      if (!rawUsername || !password) {
-        return new Response(JSON.stringify({ error: 'Username and password are required' }), {
+      if (!password) {
+        return new Response(JSON.stringify({ error: 'Password is required' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
 
-      // Normalize username - strip @kaztbu.edu.kz if present
-      const username = normalizeUsername(rawUsername);
+      // Determine if this is LDAP or local login based on input
+      const isEmailLogin = email && email.includes('@');
+      
+      if (isEmailLogin) {
+        // LOCAL USER LOGIN
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
 
-      const ldapUser = await authenticateLDAP(username, password);
+        if (!user || !user.password_hash || user.auth_type === 'ldap') {
+          return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
 
-      if (!ldapUser) {
-        return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
-          status: 401,
+        const valid = await verifyPassword(password, user.password_hash);
+        if (!valid) {
+          return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Delete guest session if exists
+        const currentSessionToken = cookies.get('session');
+        if (currentSessionToken) {
+          const [currentSession] = await db
+            .select()
+            .from(sessions)
+            .where(eq(sessions.token, currentSessionToken))
+            .limit(1);
+
+          if (currentSession) {
+            const [currentUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, currentSession.user_id))
+              .limit(1);
+
+            if (currentUser?.is_guest) {
+              await db.delete(sessions).where(eq(sessions.user_id, currentUser.id));
+              await db.delete(users).where(eq(users.id, currentUser.id));
+              console.log('Deleted guest account:', currentUser.id);
+            }
+          }
+        }
+
+        const { token, expiresAt } = await createSession(user.id);
+
+        cookies.set('session', token, {
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          expires: expiresAt
+        });
+
+        return new Response(
+          JSON.stringify({ 
+            user: { 
+              id: user.id, 
+              email: user.email, 
+              name: user.name, 
+              role: user.role,
+              is_guest: false,
+              auth_type: 'local'
+            } 
+          }),
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // LDAP LOGIN
+        if (!rawUsername) {
+          return new Response(JSON.stringify({ error: 'Username is required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const username = normalizeUsername(rawUsername);
+        const ldapUser = await authenticateLDAP(username, password);
+
+        if (!ldapUser) {
+          return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const ldapEmail = (ldapUser.mail as string) || `${username}@kaztbu.edu.kz`;
+        const name = (ldapUser.displayName as string) || username;
+        const role = determineRole(ldapUser.dn as string);
+
+        // Delete guest session if exists
+        const currentSessionToken = cookies.get('session');
+        if (currentSessionToken) {
+          const [currentSession] = await db
+            .select()
+            .from(sessions)
+            .where(eq(sessions.token, currentSessionToken))
+            .limit(1);
+
+          if (currentSession) {
+            const [currentUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, currentSession.user_id))
+              .limit(1);
+
+            if (currentUser?.is_guest) {
+              await db.delete(sessions).where(eq(sessions.user_id, currentUser.id));
+              await db.delete(users).where(eq(users.id, currentUser.id));
+              console.log('Deleted guest account:', currentUser.id);
+            }
+          }
+        }
+
+        const [existing] = await db.select().from(users).where(eq(users.email, ldapEmail)).limit(1);
+
+        let userId: string;
+
+        if (existing) {
+          await db
+            .update(users)
+            .set({
+              name,
+              role,
+              is_guest: false,
+              auth_type: 'ldap',
+              password_hash: null, // LDAP users don't store passwords
+              updated_at: new Date()
+            })
+            .where(eq(users.id, existing.id));
+          userId = existing.id;
+        } else {
+          const [newUser] = await db
+            .insert(users)
+            .values({ 
+              email: ldapEmail, 
+              name, 
+              role, 
+              is_guest: false,
+              auth_type: 'ldap',
+              password_hash: null
+            })
+            .returning();
+          userId = newUser.id;
+        }
+
+        const { token, expiresAt } = await createSession(userId);
+
+        cookies.set('session', token, {
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          expires: expiresAt
+        });
+
+        return new Response(
+          JSON.stringify({ 
+            user: { 
+              id: userId, 
+              email: ldapEmail, 
+              name, 
+              role, 
+              is_guest: false,
+              auth_type: 'ldap'
+            } 
+          }),
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    if (action === 'register') {
+      // LOCAL USER REGISTRATION
+      if (!email || !password) {
+        return new Response(JSON.stringify({ error: 'Email and password are required' }), {
+          status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
 
-      // Map LDAP info
-      const email = (ldapUser.mail as string) || `${username}@kaztbu.edu.kz`;
-      const name = (ldapUser.displayName as string) || username;
-      const role = determineRole(ldapUser.dn as string);
+      // Check if email already exists
+      const [existing] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
 
-      // Delete any existing guest account for this session
-      const currentSessionToken = cookies.get('session');
-      if (currentSessionToken) {
-        const [currentSession] = await db
+      if (existing && !existing.is_guest) {
+        return new Response(JSON.stringify({ error: 'Email already registered' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const passwordHash = await hashPassword(password);
+
+      // Check if current session belongs to a guest
+      const sessionToken = cookies.get('session');
+      let userId: string;
+
+      if (sessionToken) {
+        const [session] = await db
           .select()
           .from(sessions)
-          .where(eq(sessions.token, currentSessionToken))
+          .where(eq(sessions.token, sessionToken))
           .limit(1);
 
-        if (currentSession) {
-          const [currentUser] = await db
+        if (session) {
+          const [guestUser] = await db
             .select()
             .from(users)
-            .where(eq(users.id, currentSession.user_id))
+            .where(eq(users.id, session.user_id))
             .limit(1);
 
-          // If current user is a guest, delete their session and account
-          if (currentUser?.is_guest) {
-            await db.delete(sessions).where(eq(sessions.user_id, currentUser.id));
-            await db.delete(users).where(eq(users.id, currentUser.id));
-            console.log('Deleted guest account:', currentUser.id);
+          // If current user is guest, upgrade them
+          if (guestUser && guestUser.is_guest) {
+            await db
+              .update(users)
+              .set({
+                email,
+                password_hash: passwordHash,
+                is_guest: false,
+                auth_type: 'local',
+                updated_at: new Date()
+              })
+              .where(eq(users.id, guestUser.id));
+
+            userId = guestUser.id;
+
+            return new Response(JSON.stringify({
+              user: {
+                id: userId,
+                email,
+                name: guestUser.name,
+                role: guestUser.role || 'user',
+                is_guest: false,
+                auth_type: 'local'
+              },
+              message: 'Account upgraded! Your chats have been preserved.'
+            }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
           }
         }
       }
 
-      // Check if a registered user exists in DB
-      const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      // Create new local user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email,
+          password_hash: passwordHash,
+          is_guest: false,
+          auth_type: 'local',
+          role: 'user'
+        })
+        .returning();
 
-      let userId: string;
-
-      if (existing) {
-        // Update user info including role
-        await db
-          .update(users)
-          .set({ 
-            name, 
-            role, 
-            is_guest: false, 
-            updated_at: new Date() 
-          })
-          .where(eq(users.id, existing.id));
-        userId = existing.id;
-      } else {
-        // Create new LDAP-backed user with role
-        const [newUser] = await db
-          .insert(users)
-          .values({ email, name, role, is_guest: false })
-          .returning();
-        userId = newUser.id;
-      }
-
-      const { token, expiresAt } = await createSession(userId);
+      const { token, expiresAt } = await createSession(newUser.id);
 
       cookies.set('session', token, {
         path: '/',
@@ -222,10 +422,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
         expires: expiresAt
       });
 
-      return new Response(
-        JSON.stringify({ user: { id: userId, email, name, role, is_guest: false } }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role || 'user',
+          is_guest: false,
+          auth_type: 'local'
+        }
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
@@ -235,7 +443,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   } catch (err) {
     console.error('Failed POST /api/auth:', err);
     const errorMessage = err instanceof Error ? err.message : 'Internal Server Error';
-    return new Response(JSON.stringify({ error: errorMessage }), { 
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -251,12 +459,12 @@ export const DELETE: RequestHandler = async ({ cookies }) => {
       cookies.delete('session', { path: '/' });
     }
 
-    return new Response(JSON.stringify({ success: true }), { 
-      headers: { 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (err) {
     console.error('Failed DELETE /api/auth:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { 
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

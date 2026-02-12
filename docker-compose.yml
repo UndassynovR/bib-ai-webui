@@ -20,9 +20,8 @@ services:
   app:
     build: .
     container_name: chatapp
-    volumes:
-      - .:/app
-#      - ~/.certs/kaztbu-DC1-CA.crt:/usr/local/share/ca-certificates/kaztbu-DC1-CA.crt:ro
+#    volumes:
+#      - .:/app
     working_dir: /app
     ports:
       - "${APP_PORT}:${APP_PORT}"

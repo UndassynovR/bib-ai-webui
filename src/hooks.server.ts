@@ -1,11 +1,58 @@
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit';
 import { getDb } from '$lib/server/db/pg';
-const db = getDb();
 import { users, sessions } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 
+const db = getDb();
+
+// Admin account auto-creation flag
+let adminCheckDone = false;
+
+async function ensureAdminExists() {
+  if (adminCheckDone) return;
+  
+  try {
+    const adminEmail = 'admin@localhost';
+    
+    // Check if admin already exists
+    const [existing] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, adminEmail))
+      .limit(1);
+    
+    if (!existing) {
+      console.log('👤 Creating default admin account...');
+      
+      const bcrypt = await import('bcrypt');
+      const passwordHash = await bcrypt.hash('admin123', 10);
+      
+      await db.insert(users).values({
+        email: adminEmail,
+        name: 'Administrator',
+        password_hash: passwordHash,
+        auth_type: 'local',
+        is_guest: false,
+        role: 'admin'
+      });
+      
+      console.log('✅ Admin account created successfully!');
+      console.log(`   Email: ${adminEmail}`);
+      console.log(`   Password: admin123`);
+      console.log('   ⚠️  IMPORTANT: Change this password after first login!');
+    }
+    
+    adminCheckDone = true;
+  } catch (err) {
+    console.error('❌ Error checking/creating admin account:', err);
+  }
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
+  // Create admin on first request if needed
+  await ensureAdminExists();
+  
   const sessionToken = event.cookies.get('session');
   
   if (sessionToken) {

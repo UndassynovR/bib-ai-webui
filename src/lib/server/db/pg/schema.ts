@@ -10,23 +10,27 @@ import {
   text,
 } from "drizzle-orm/pg-core";
 
-// Users table (LDAP + guest support)
+// Users table (LDAP + local + guest support)
 export const users = pgTable(
   "users",
   {
     id: uuid().primaryKey().$default(() => Bun.randomUUIDv7()),
     email: varchar({ length: 256 }),
     name: varchar({ length: 256 }),
+    password_hash: varchar({ length: 256 }), // For local users only
+    auth_type: varchar({ length: 10 }).notNull().default("local"), // 'local' or 'ldap'
     ldap_guid: varchar({ length: 64 }),
     is_guest: boolean().notNull().default(true),
     role: varchar({ length: 20 }).notNull().default("user"),
     theme: varchar({ length: 20 }).notNull().default("system"),
     language: varchar({ length: 10 }).notNull().default("auto"),
+    created_at: timestamp().defaultNow(),
     updated_at: timestamp().defaultNow(),
   },
   (table) => ({
     email_idx: index("users_email_idx").on(table.email),
     ldap_guid_idx: index("users_ldap_guid_idx").on(table.ldap_guid),
+    auth_type_idx: index("users_auth_type_idx").on(table.auth_type),
     updated_at_idx: index("users_updated_at_idx").on(table.updated_at),
   })
 );

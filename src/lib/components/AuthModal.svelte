@@ -11,7 +11,10 @@
 
   let { isOpen, onClose, onSuccess }: Props = $props();
 
+  let authMode = $state<'login' | 'register'>('login');
+  let loginType = $state<'ldap' | 'local'>('ldap');
   let username = $state('');
+  let email = $state('');
   let password = $state('');
   let error = $state('');
   let loading = $state(false);
@@ -19,6 +22,7 @@
 
   function reset() {
     username = '';
+    email = '';
     password = '';
     error = '';
     successMessage = '';
@@ -32,14 +36,26 @@
     loading = true;
 
     try {
+      let body: any = {
+        action: authMode,
+        password
+      };
+
+      if (authMode === 'login') {
+        if (loginType === 'ldap') {
+          body.username = username;
+        } else {
+          body.email = email;
+        }
+      } else {
+        // Register
+        body.email = email;
+      }
+
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'login',
-          username,
-          password,
-        }),
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
@@ -99,9 +115,17 @@
         <X size={20} />
       </button>
 
-      <h2>{i18n.t('auth.loginHeading')}</h2>
+      <h2>
+        {authMode === 'login' 
+          ? i18n.t('auth.loginHeading') 
+          : i18n.t('auth.signupHeading')}
+      </h2>
 
-      <p class="subtitle">{i18n.t('auth.loginSubtitle')}</p>
+      <p class="subtitle">
+        {authMode === 'login'
+          ? i18n.t('auth.loginTitle')
+          : i18n.t('auth.signupTitle')}
+      </p>
 
       {#if error}
         <div class="message error">{error}</div>
@@ -112,17 +136,70 @@
       {/if}
 
       <form onsubmit={handleSubmit}>
-        <div class="form-group">
-          <label for="username">{i18n.t('auth.username')}</label>
-          <input
-            id="username"
-            type="text"
-            bind:value={username}
-            placeholder={i18n.t('auth.username')}
-            required
-            disabled={loading}
-          />
-        </div>
+        {#if authMode === 'login'}
+          <div class="tabs">
+            <button
+              type="button"
+              class:active={loginType === 'ldap'}
+              onclick={() => {
+                loginType = 'ldap';
+                error = '';
+              }}
+            >
+              University Account
+            </button>
+            <button
+              type="button"
+              class:active={loginType === 'local'}
+              onclick={() => {
+                loginType = 'local';
+                error = '';
+              }}
+            >
+              Personal Account
+            </button>
+          </div>
+
+          {#if loginType === 'ldap'}
+            <p class="helper-text">Use your KazUTB credentials</p>
+            <div class="form-group">
+              <label for="username">{i18n.t('auth.username')}</label>
+              <input
+                id="username"
+                type="text"
+                bind:value={username}
+                placeholder={i18n.t('auth.username') || 'username or username@kaztbu.edu.kz'}
+                required
+                disabled={loading}
+              />
+            </div>
+          {:else}
+            <p class="helper-text">Login with your registered email</p>
+            <div class="form-group">
+              <label for="email">{i18n.t('auth.email') || 'Email'}</label>
+              <input
+                id="email"
+                type="email"
+                bind:value={email}
+                placeholder="you@example.com"
+                required
+                disabled={loading}
+              />
+            </div>
+          {/if}
+        {:else}
+          <div class="form-group">
+            <label for="email">{i18n.t('auth.email') || 'Email'}</label>
+            <input
+              id="email"
+              type="email"
+              bind:value={email}
+              placeholder="you@example.com"
+              required
+              disabled={loading}
+            />
+          </div>
+        {/if}
 
         <div class="form-group">
           <label for="password">{i18n.t('auth.password')}</label>
@@ -138,9 +215,43 @@
         </div>
 
         <button type="submit" class="submit-btn" disabled={loading}>
-          {loading ? i18n.t('auth.pleaseWait') : i18n.t('auth.loginButton')}
+          {loading 
+            ? i18n.t('auth.pleaseWait') 
+            : authMode === 'login'
+              ? i18n.t('auth.loginButton')
+              : i18n.t('auth.signupButton')}
         </button>
       </form>
+
+      <div class="switch-mode">
+        {#if authMode === 'login'}
+          <p>
+            {i18n.t('auth.dontHaveAccount')}
+            <button 
+              type="button" 
+              onclick={() => {
+                authMode = 'register';
+                error = '';
+              }}
+            >
+              {i18n.t('auth.signup')}
+            </button>
+          </p>
+        {:else}
+          <p>
+            {i18n.t('auth.alreadyHaveAccount')}
+            <button 
+              type="button" 
+              onclick={() => {
+                authMode = 'login';
+                error = '';
+              }}
+            >
+              {i18n.t('auth.login')}
+            </button>
+          </p>
+        {/if}
+      </div>
     </div>
   </div>
 {/if}
@@ -198,6 +309,41 @@
     margin: 0 0 1.5rem 0;
     color: var(--text-secondary);
     font-size: 0.875rem;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-secondary);
+    padding: 0.25rem;
+    border-radius: 8px;
+  }
+
+  .tabs button {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+
+  .tabs button.active {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .helper-text {
+    margin: 0 0 1rem 0;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    font-style: italic;
   }
 
   .message {
@@ -280,5 +426,33 @@
     background: var(--bg-tertiary);
     cursor: not-allowed;
     opacity: 0.6;
+  }
+
+  .switch-mode {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+  }
+
+  .switch-mode p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .switch-mode button {
+    background: none;
+    border: none;
+    color: #4a7dc2;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  .switch-mode button:hover {
+    color: #3d6ba8;
   }
 </style>

@@ -209,5 +209,9 @@ export default {
       title: 'Бетбелгілер',
       total: 'Барлығы',
     },
+
+	settings: {
+	  title: 'Сервер параметрлері',
+	},
   },
 };

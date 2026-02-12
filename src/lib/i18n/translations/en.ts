@@ -209,5 +209,9 @@ export default {
       title: 'Bookmarks',
       total: 'Total',
     },
+
+	settings: {
+	  title: 'Server settings',
+	},
   },
 };

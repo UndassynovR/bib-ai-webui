@@ -209,5 +209,9 @@ export default {
       title: 'Закладки',
       total: 'Всего',
     },
+
+	settings: {
+	  title: 'Настройки сервера',
+	},
   },
 };
