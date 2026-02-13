@@ -1,17 +1,21 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import { i18n } from '$lib/stores/i18nStore.svelte';
+  import type { PageData } from './$types';
+  
+  let { data }: { data: PageData } = $props();
   
   // Config State (UPPERCASE to match config.json keys)
-  let OPENAI_API_KEY = $state('');
-  let LDAP_URL = $state('');
-  let LDAP_BASE_DN = $state('');
-  let LDAP_ADMIN_LOGIN = $state('');
-  let LDAP_ADMIN_PASSWORD = $state('');
-  let LIBRARY_DB_HOST = $state('');
-  let LIBRARY_DB_PORT = $state('1433');
-  let LIBRARY_DB_NAME = $state('');
-  let LIBRARY_DB_USER = $state('');
-  let LIBRARY_DB_PASSWORD = $state('');
+  let OPENAI_API_KEY = $state(data.config.OPENAI_API_KEY || '');
+  let LDAP_URL = $state(data.config.LDAP_URL || '');
+  let LDAP_BASE_DN = $state(data.config.LDAP_BASE_DN || '');
+  let LDAP_ADMIN_LOGIN = $state(data.config.LDAP_ADMIN_LOGIN || '');
+  let LDAP_ADMIN_PASSWORD = $state(data.config.LDAP_ADMIN_PASSWORD || '');
+  let LIBRARY_DB_HOST = $state(data.config.LIBRARY_DB_HOST || '');
+  let LIBRARY_DB_PORT = $state(data.config.LIBRARY_DB_PORT || '1433');
+  let LIBRARY_DB_NAME = $state(data.config.LIBRARY_DB_NAME || '');
+  let LIBRARY_DB_USER = $state(data.config.LIBRARY_DB_USER || '');
+  let LIBRARY_DB_PASSWORD = $state(data.config.LIBRARY_DB_PASSWORD || '');
   
   // UI State
   let ldapCertFile = $state<File | null>(null);
@@ -30,62 +34,20 @@
     ? `mssql://${LIBRARY_DB_USER}:${LIBRARY_DB_PASSWORD}@${LIBRARY_DB_HOST}${LIBRARY_DB_PORT ? ':' + LIBRARY_DB_PORT : ''}/${LIBRARY_DB_NAME}?encrypt=true&trustServerCertificate=true`
     : '');
   
-  async function loadSettings() {
-    console.log('[Settings] Loading settings...');
-    try {
-      const response = await fetch('/api/admin/settings');
-      console.log('[Settings] Load response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[Settings] Loaded data:', Object.keys(data));
-        
-        // Bind data from JSON (UPPERCASE) to state
-        OPENAI_API_KEY = data.OPENAI_API_KEY || '';
-        LDAP_URL = data.LDAP_URL || '';
-        LDAP_BASE_DN = data.LDAP_BASE_DN || '';
-        LDAP_ADMIN_LOGIN = data.LDAP_ADMIN_LOGIN || '';
-        LDAP_ADMIN_PASSWORD = data.LDAP_ADMIN_PASSWORD || '';
-        LIBRARY_DB_HOST = data.LIBRARY_DB_HOST || '';
-        LIBRARY_DB_PORT = data.LIBRARY_DB_PORT || '1433';
-        LIBRARY_DB_NAME = data.LIBRARY_DB_NAME || '';
-        LIBRARY_DB_USER = data.LIBRARY_DB_USER || '';
-        LIBRARY_DB_PASSWORD = data.LIBRARY_DB_PASSWORD || '';
-        
-        console.log('[Settings] Successfully loaded settings');
-      } else {
-        console.error('[Settings] Load failed with status:', response.status);
-        const text = await response.text();
-        console.error('[Settings] Error response:', text);
-      }
-    } catch (error) {
-      console.error('[Settings] Failed to load settings:', error);
-      console.error('[Settings] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
-  }
-  
   async function testOpenAI() {
     console.log('[OpenAI] Testing connection...');
     openaiStatus = 'testing';
     openaiError = '';
     
     try {
-      const requestBody = { apiKey: OPENAI_API_KEY };
-      console.log('[OpenAI] Sending test request');
-      
       const response = await fetch('/api/admin/settings/test-openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({ apiKey: OPENAI_API_KEY })
       });
       
       console.log('[OpenAI] Response status:', response.status);
       const data = await response.json();
-      console.log('[OpenAI] Response data:', data);
       
       if (response.ok) {
         openaiStatus = 'success';
@@ -99,11 +61,6 @@
       openaiStatus = 'error';
       openaiError = 'Network error';
       console.error('[OpenAI] Network error:', error);
-      console.error('[OpenAI] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
     }
   }
   
@@ -120,12 +77,8 @@
       formData.append('adminPassword', LDAP_ADMIN_PASSWORD);
       
       if (ldapCertFile) {
-        console.log('[LDAP] Including certificate file:', ldapCertFile.name);
         formData.append('certificate', ldapCertFile);
       }
-      
-      console.log('[LDAP] Form data entries:', Array.from(formData.keys()));
-      console.log('[LDAP] Sending test request to /api/admin/settings/test-ldap');
       
       const response = await fetch('/api/admin/settings/test-ldap', {
         method: 'POST',
@@ -133,21 +86,7 @@
       });
       
       console.log('[LDAP] Response status:', response.status);
-      console.log('[LDAP] Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      const contentType = response.headers.get('content-type');
-      console.log('[LDAP] Content-Type:', contentType);
-      
-      let data;
-      try {
-        const text = await response.text();
-        console.log('[LDAP] Raw response text:', text.substring(0, 200));
-        data = JSON.parse(text);
-        console.log('[LDAP] Parsed response data:', data);
-      } catch (parseError) {
-        console.error('[LDAP] Failed to parse JSON response:', parseError);
-        throw new Error('Invalid JSON response from server');
-      }
+      const data = await response.json();
       
       if (response.ok) {
         ldapStatus = 'success';
@@ -159,13 +98,8 @@
       }
     } catch (error) {
       ldapStatus = 'error';
-      ldapError = error instanceof Error ? error.message : 'Network error';
+      ldapError = 'Network error';
       console.error('[LDAP] Network error:', error);
-      console.error('[LDAP] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
     }
   }
   
@@ -175,31 +109,20 @@
     libraryDbError = '';
     
     try {
-      const requestBody = {
-        host: LIBRARY_DB_HOST,
-        port: LIBRARY_DB_PORT,
-        database: LIBRARY_DB_NAME,
-        user: LIBRARY_DB_USER,
-        password: LIBRARY_DB_PASSWORD
-      };
-      
-      console.log('[LibraryDB] Request body (sanitized):', {
-        host: LIBRARY_DB_HOST,
-        port: LIBRARY_DB_PORT,
-        database: LIBRARY_DB_NAME,
-        user: LIBRARY_DB_USER,
-        password: '***'
-      });
-      
       const response = await fetch('/api/admin/settings/test-library-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          host: LIBRARY_DB_HOST,
+          port: LIBRARY_DB_PORT,
+          database: LIBRARY_DB_NAME,
+          user: LIBRARY_DB_USER,
+          password: LIBRARY_DB_PASSWORD
+        })
       });
       
       console.log('[LibraryDB] Response status:', response.status);
       const data = await response.json();
-      console.log('[LibraryDB] Response data:', data);
       
       if (response.ok) {
         libraryDbStatus = 'success';
@@ -213,80 +136,6 @@
       libraryDbStatus = 'error';
       libraryDbError = 'Network error';
       console.error('[LibraryDB] Network error:', error);
-      console.error('[LibraryDB] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
-  }
-  
-  async function saveSettings() {
-    console.log('[Save] Starting save operation...');
-    loading = true;
-    
-    try {
-      const formData = new FormData();
-      formData.append('OPENAI_API_KEY', OPENAI_API_KEY);
-      formData.append('LDAP_URL', LDAP_URL);
-      formData.append('LDAP_BASE_DN', LDAP_BASE_DN);
-      formData.append('LDAP_ADMIN_LOGIN', LDAP_ADMIN_LOGIN);
-      formData.append('LDAP_ADMIN_PASSWORD', LDAP_ADMIN_PASSWORD);
-      formData.append('LIBRARY_DB_HOST', LIBRARY_DB_HOST);
-      formData.append('LIBRARY_DB_PORT', LIBRARY_DB_PORT);
-      formData.append('LIBRARY_DB_NAME', LIBRARY_DB_NAME);
-      formData.append('LIBRARY_DB_USER', LIBRARY_DB_USER);
-      formData.append('LIBRARY_DB_PASSWORD', LIBRARY_DB_PASSWORD);
-            
-      if (ldapCertFile) {
-        console.log('[Save] Including LDAP certificate:', ldapCertFile.name);
-        formData.append('LDAP_CERTIFICATE', ldapCertFile);
-      }
-      
-      console.log('[Save] Form data keys:', Array.from(formData.keys()));
-      console.log('[Save] Sending POST to /api/admin/settings');
-      
-      const response = await fetch('/api/admin/settings', {
-        method: 'POST',
-        body: formData
-      });
-      
-      console.log('[Save] Response status:', response.status);
-      console.log('[Save] Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      if (response.ok) {
-        console.log('[Save] Save successful');
-        alert('Settings saved successfully');
-        await loadSettings(); // Re-load to ensure state is fresh
-      } else {
-        const contentType = response.headers.get('content-type');
-        console.log('[Save] Error response content-type:', contentType);
-        
-        let errorMessage = 'Unknown error';
-        try {
-          const text = await response.text();
-          console.log('[Save] Error response text:', text);
-          const data = JSON.parse(text);
-          errorMessage = data.error || 'Unknown error';
-        } catch (parseError) {
-          console.error('[Save] Failed to parse error response:', parseError);
-          errorMessage = 'Invalid response from server';
-        }
-        
-        console.error('[Save] Save failed:', errorMessage);
-        alert('Failed to save settings: ' + errorMessage);
-      }
-    } catch (error) {
-      console.error('[Save] Network error:', error);
-      console.error('[Save] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      alert('Network error: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    } finally {
-      loading = false;
-      console.log('[Save] Save operation completed');
     }
   }
   
@@ -294,139 +143,154 @@
     const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       ldapCertFile = input.files[0];
-      console.log('[CertUpload] File selected:', ldapCertFile.name, 'Size:', ldapCertFile.size);
+      console.log('[CertUpload] File selected:', ldapCertFile.name);
     }
   }
-  
-  $effect(() => {
-    console.log('[Effect] Component mounted, loading settings');
-    loadSettings();
-  });
 </script>
 
 <div class="settings-page">
   <h1>{i18n.t('dashboard.settings.title')}</h1>
   
-  <section class="settings-section">
-    <h2>OpenAI API</h2>
-    <div class="form-group">
-      <label for="openai-key">API Key</label>
-      <div class="input-with-button">
-        <input
-          id="openai-key"
-          type="password"
-          bind:value={OPENAI_API_KEY}
-          placeholder="sk-proj-..."
-          disabled={loading}
-        />
-        <button
-          type="button"
-          class="test-btn"
-          onclick={testOpenAI}
-          disabled={!OPENAI_API_KEY || openaiStatus === 'testing'}
-        >
-          {openaiStatus === 'testing' ? 'Testing...' : 'Test Connection'}
-        </button>
+  <!-- Use form action instead of fetch -->
+  <form method="POST" action="?/save" enctype="multipart/form-data" use:enhance={() => {
+    console.log('[Form] Submitting with form action');
+    loading = true;
+    
+    return async ({ result, update }) => {
+      console.log('[Form] Result:', result);
+      loading = false;
+      
+      if (result.type === 'success') {
+        alert('Settings saved successfully');
+      } else if (result.type === 'failure') {
+        alert('Failed to save settings: ' + (result.data?.error || 'Unknown error'));
+      }
+      
+      await update();
+    };
+  }}>
+    <section class="settings-section">
+      <h2>OpenAI API</h2>
+      <div class="form-group">
+        <label for="openai-key">API Key</label>
+        <div class="input-with-button">
+          <input
+            id="openai-key"
+            name="OPENAI_API_KEY"
+            type="password"
+            bind:value={OPENAI_API_KEY}
+            placeholder="sk-proj-..."
+            disabled={loading}
+          />
+          <button
+            type="button"
+            class="test-btn"
+            onclick={testOpenAI}
+            disabled={!OPENAI_API_KEY || openaiStatus === 'testing'}
+          >
+            {openaiStatus === 'testing' ? 'Testing...' : 'Test Connection'}
+          </button>
+        </div>
+        {#if openaiStatus === 'success'}
+          <div class="status success">✓ Connection successful</div>
+        {/if}
+        {#if openaiStatus === 'error'}
+          <div class="status error">✗ {openaiError}</div>
+        {/if}
       </div>
-      {#if openaiStatus === 'success'}
-        <div class="status success">✓ Connection successful</div>
-      {/if}
-      {#if openaiStatus === 'error'}
-        <div class="status error">✗ {openaiError}</div>
-      {/if}
-    </div>
-  </section>
-  
-  <section class="settings-section">
-    <h2>LDAP Settings</h2>
-    <div class="form-group">
-      <label for="ldap-url">Server URL</label>
-      <input id="ldap-url" type="text" bind:value={LDAP_URL} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="ldap-base-dn">Base DN</label>
-      <input id="ldap-base-dn" type="text" bind:value={LDAP_BASE_DN} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="ldap-admin-login">Admin Login</label>
-      <input id="ldap-admin-login" type="text" bind:value={LDAP_ADMIN_LOGIN} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="ldap-admin-password">Admin Password</label>
-      <input id="ldap-admin-password" type="password" bind:value={LDAP_ADMIN_PASSWORD} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="ldap-cert">Certificate (.crt)</label>
-      <input id="ldap-cert" type="file" accept=".crt,.pem" onchange={handleCertUpload} disabled={loading} />
-      {#if ldapCertFile}
-        <div class="file-info">{ldapCertFile.name}</div>
-      {/if}
-    </div>
-    <button
-      type="button"
-      class="test-btn"
-      onclick={testLDAP}
-      disabled={!LDAP_URL || !LDAP_BASE_DN || !LDAP_ADMIN_LOGIN || !LDAP_ADMIN_PASSWORD || ldapStatus === 'testing'}
-    >
-      {ldapStatus === 'testing' ? 'Testing...' : 'Test LDAP Connection'}
-    </button>
-    {#if ldapStatus === 'success'}
-      <div class="status success">✓ LDAP connection successful</div>
-    {/if}
-    {#if ldapStatus === 'error'}
-      <div class="status error">✗ {ldapError}</div>
-    {/if}
-  </section>
-  
-  <section class="settings-section">
-    <h2>Library Database (MSSQL)</h2>
-    <div class="form-group">
-      <label for="library-db-host">Host</label>
-      <input id="library-db-host" type="text" bind:value={LIBRARY_DB_HOST} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="library-db-port">Port</label>
-      <input id="library-db-port" type="text" bind:value={LIBRARY_DB_PORT} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="library-db-name">Database Name</label>
-      <input id="library-db-name" type="text" bind:value={LIBRARY_DB_NAME} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="library-db-user">Username</label>
-      <input id="library-db-user" type="text" bind:value={LIBRARY_DB_USER} disabled={loading} />
-    </div>
-    <div class="form-group">
-      <label for="library-db-password">Password</label>
-      <input id="library-db-password" type="password" bind:value={LIBRARY_DB_PASSWORD} disabled={loading} />
-    </div>
-    {#if libraryDbUrl}
-      <div class="connection-string">
-        <label>Connection String:</label>
-        <code>{libraryDbUrl}</code>
+    </section>
+    
+    <section class="settings-section">
+      <h2>LDAP Settings</h2>
+      <div class="form-group">
+        <label for="ldap-url">Server URL</label>
+        <input id="ldap-url" name="LDAP_URL" type="text" bind:value={LDAP_URL} disabled={loading} />
       </div>
-    {/if}
-    <button
-      type="button"
-      class="test-btn"
-      onclick={testLibraryDb}
-      disabled={!LIBRARY_DB_HOST || !LIBRARY_DB_NAME || !LIBRARY_DB_USER || !LIBRARY_DB_PASSWORD || libraryDbStatus === 'testing'}
-    >
-      {libraryDbStatus === 'testing' ? 'Testing...' : 'Test Database Connection'}
-    </button>
-    {#if libraryDbStatus === 'success'}
-      <div class="status success">✓ Database connection successful</div>
-    {/if}
-    {#if libraryDbStatus === 'error'}
-      <div class="status error">✗ {libraryDbError}</div>
-    {/if}
-  </section>
-  
-  <div class="actions">
-    <button type="button" class="save-btn" onclick={saveSettings} disabled={loading}>
-      {loading ? 'Saving...' : 'Save Settings'}
-    </button>
-  </div>
+      <div class="form-group">
+        <label for="ldap-base-dn">Base DN</label>
+        <input id="ldap-base-dn" name="LDAP_BASE_DN" type="text" bind:value={LDAP_BASE_DN} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="ldap-admin-login">Admin Login</label>
+        <input id="ldap-admin-login" name="LDAP_ADMIN_LOGIN" type="text" bind:value={LDAP_ADMIN_LOGIN} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="ldap-admin-password">Admin Password</label>
+        <input id="ldap-admin-password" name="LDAP_ADMIN_PASSWORD" type="password" bind:value={LDAP_ADMIN_PASSWORD} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="ldap-cert">Certificate (.crt)</label>
+        <input id="ldap-cert" name="LDAP_CERTIFICATE" type="file" accept=".crt,.pem" onchange={handleCertUpload} disabled={loading} />
+        {#if ldapCertFile}
+          <div class="file-info">{ldapCertFile.name}</div>
+        {/if}
+      </div>
+      <button
+        type="button"
+        class="test-btn"
+        onclick={testLDAP}
+        disabled={!LDAP_URL || !LDAP_BASE_DN || !LDAP_ADMIN_LOGIN || !LDAP_ADMIN_PASSWORD || ldapStatus === 'testing'}
+      >
+        {ldapStatus === 'testing' ? 'Testing...' : 'Test LDAP Connection'}
+      </button>
+      {#if ldapStatus === 'success'}
+        <div class="status success">✓ LDAP connection successful</div>
+      {/if}
+      {#if ldapStatus === 'error'}
+        <div class="status error">✗ {ldapError}</div>
+      {/if}
+    </section>
+    
+    <section class="settings-section">
+      <h2>Library Database (MSSQL)</h2>
+      <div class="form-group">
+        <label for="library-db-host">Host</label>
+        <input id="library-db-host" name="LIBRARY_DB_HOST" type="text" bind:value={LIBRARY_DB_HOST} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="library-db-port">Port</label>
+        <input id="library-db-port" name="LIBRARY_DB_PORT" type="text" bind:value={LIBRARY_DB_PORT} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="library-db-name">Database Name</label>
+        <input id="library-db-name" name="LIBRARY_DB_NAME" type="text" bind:value={LIBRARY_DB_NAME} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="library-db-user">Username</label>
+        <input id="library-db-user" name="LIBRARY_DB_USER" type="text" bind:value={LIBRARY_DB_USER} disabled={loading} />
+      </div>
+      <div class="form-group">
+        <label for="library-db-password">Password</label>
+        <input id="library-db-password" name="LIBRARY_DB_PASSWORD" type="password" bind:value={LIBRARY_DB_PASSWORD} disabled={loading} />
+      </div>
+      {#if libraryDbUrl}
+        <div class="connection-string">
+          <label>Connection String:</label>
+          <code>{libraryDbUrl}</code>
+        </div>
+      {/if}
+      <button
+        type="button"
+        class="test-btn"
+        onclick={testLibraryDb}
+        disabled={!LIBRARY_DB_HOST || !LIBRARY_DB_NAME || !LIBRARY_DB_USER || !LIBRARY_DB_PASSWORD || libraryDbStatus === 'testing'}
+      >
+        {libraryDbStatus === 'testing' ? 'Testing...' : 'Test Database Connection'}
+      </button>
+      {#if libraryDbStatus === 'success'}
+        <div class="status success">✓ Database connection successful</div>
+      {/if}
+      {#if libraryDbStatus === 'error'}
+        <div class="status error">✗ {libraryDbError}</div>
+      {/if}
+    </section>
+    
+    <div class="actions">
+      <button type="submit" class="save-btn" disabled={loading}>
+        {loading ? 'Saving...' : 'Save Settings'}
+      </button>
+    </div>
+  </form>
 </div>
 
 <style>
