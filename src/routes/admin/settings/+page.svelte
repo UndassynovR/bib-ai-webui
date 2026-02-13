@@ -1,6 +1,6 @@
 <script lang="ts">
   import { i18n } from '$lib/stores/i18nStore.svelte';
-
+  
   // Config State (UPPERCASE to match config.json keys)
   let OPENAI_API_KEY = $state('');
   let LDAP_URL = $state('');
@@ -12,29 +12,34 @@
   let LIBRARY_DB_NAME = $state('');
   let LIBRARY_DB_USER = $state('');
   let LIBRARY_DB_PASSWORD = $state('');
-
+  
   // UI State
   let ldapCertFile = $state<File | null>(null);
   let loading = $state(false);
-
+  
   let openaiStatus = $state<'idle' | 'testing' | 'success' | 'error'>('idle');
   let openaiError = $state('');
-  
+    
   let ldapStatus = $state<'idle' | 'testing' | 'success' | 'error'>('idle');
   let ldapError = $state('');
-
+  
   let libraryDbStatus = $state<'idle' | 'testing' | 'success' | 'error'>('idle');
   let libraryDbError = $state('');
-
+  
   let libraryDbUrl = $derived(LIBRARY_DB_HOST && LIBRARY_DB_NAME && LIBRARY_DB_USER && LIBRARY_DB_PASSWORD
     ? `mssql://${LIBRARY_DB_USER}:${LIBRARY_DB_PASSWORD}@${LIBRARY_DB_HOST}${LIBRARY_DB_PORT ? ':' + LIBRARY_DB_PORT : ''}/${LIBRARY_DB_NAME}?encrypt=true&trustServerCertificate=true`
     : '');
-
+  
   async function loadSettings() {
+    console.log('[Settings] Loading settings...');
     try {
       const response = await fetch('/api/admin/settings');
+      console.log('[Settings] Load response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[Settings] Loaded data:', Object.keys(data));
+        
         // Bind data from JSON (UPPERCASE) to state
         OPENAI_API_KEY = data.OPENAI_API_KEY || '';
         LDAP_URL = data.LDAP_URL || '';
@@ -46,93 +51,180 @@
         LIBRARY_DB_NAME = data.LIBRARY_DB_NAME || '';
         LIBRARY_DB_USER = data.LIBRARY_DB_USER || '';
         LIBRARY_DB_PASSWORD = data.LIBRARY_DB_PASSWORD || '';
+        
+        console.log('[Settings] Successfully loaded settings');
+      } else {
+        console.error('[Settings] Load failed with status:', response.status);
+        const text = await response.text();
+        console.error('[Settings] Error response:', text);
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      console.error('[Settings] Failed to load settings:', error);
+      console.error('[Settings] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   }
-
+  
   async function testOpenAI() {
+    console.log('[OpenAI] Testing connection...');
     openaiStatus = 'testing';
     openaiError = '';
+    
     try {
+      const requestBody = { apiKey: OPENAI_API_KEY };
+      console.log('[OpenAI] Sending test request');
+      
       const response = await fetch('/api/admin/settings/test-openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: OPENAI_API_KEY })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log('[OpenAI] Response status:', response.status);
       const data = await response.json();
+      console.log('[OpenAI] Response data:', data);
+      
       if (response.ok) {
         openaiStatus = 'success';
+        console.log('[OpenAI] Test successful');
       } else {
         openaiStatus = 'error';
         openaiError = data.error || 'Connection failed';
+        console.error('[OpenAI] Test failed:', openaiError);
       }
     } catch (error) {
       openaiStatus = 'error';
       openaiError = 'Network error';
+      console.error('[OpenAI] Network error:', error);
+      console.error('[OpenAI] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   }
-
+  
   async function testLDAP() {
+    console.log('[LDAP] Testing connection...');
     ldapStatus = 'testing';
     ldapError = '';
+    
     try {
       const formData = new FormData();
       formData.append('url', LDAP_URL);
       formData.append('baseDn', LDAP_BASE_DN);
       formData.append('adminLogin', LDAP_ADMIN_LOGIN);
       formData.append('adminPassword', LDAP_ADMIN_PASSWORD);
+      
       if (ldapCertFile) {
+        console.log('[LDAP] Including certificate file:', ldapCertFile.name);
         formData.append('certificate', ldapCertFile);
       }
+      
+      console.log('[LDAP] Form data entries:', Array.from(formData.keys()));
+      console.log('[LDAP] Sending test request to /api/admin/settings/test-ldap');
+      
       const response = await fetch('/api/admin/settings/test-ldap', {
         method: 'POST',
         body: formData
       });
-      const data = await response.json();
+      
+      console.log('[LDAP] Response status:', response.status);
+      console.log('[LDAP] Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const contentType = response.headers.get('content-type');
+      console.log('[LDAP] Content-Type:', contentType);
+      
+      let data;
+      try {
+        const text = await response.text();
+        console.log('[LDAP] Raw response text:', text.substring(0, 200));
+        data = JSON.parse(text);
+        console.log('[LDAP] Parsed response data:', data);
+      } catch (parseError) {
+        console.error('[LDAP] Failed to parse JSON response:', parseError);
+        throw new Error('Invalid JSON response from server');
+      }
+      
       if (response.ok) {
         ldapStatus = 'success';
+        console.log('[LDAP] Test successful');
       } else {
         ldapStatus = 'error';
         ldapError = data.error || 'Connection failed';
+        console.error('[LDAP] Test failed:', ldapError);
       }
     } catch (error) {
       ldapStatus = 'error';
-      ldapError = 'Network error';
+      ldapError = error instanceof Error ? error.message : 'Network error';
+      console.error('[LDAP] Network error:', error);
+      console.error('[LDAP] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   }
-
+  
   async function testLibraryDb() {
+    console.log('[LibraryDB] Testing connection...');
     libraryDbStatus = 'testing';
     libraryDbError = '';
+    
     try {
+      const requestBody = {
+        host: LIBRARY_DB_HOST,
+        port: LIBRARY_DB_PORT,
+        database: LIBRARY_DB_NAME,
+        user: LIBRARY_DB_USER,
+        password: LIBRARY_DB_PASSWORD
+      };
+      
+      console.log('[LibraryDB] Request body (sanitized):', {
+        host: LIBRARY_DB_HOST,
+        port: LIBRARY_DB_PORT,
+        database: LIBRARY_DB_NAME,
+        user: LIBRARY_DB_USER,
+        password: '***'
+      });
+      
       const response = await fetch('/api/admin/settings/test-library-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          host: LIBRARY_DB_HOST,
-          port: LIBRARY_DB_PORT,
-          database: LIBRARY_DB_NAME,
-          user: LIBRARY_DB_USER,
-          password: LIBRARY_DB_PASSWORD
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log('[LibraryDB] Response status:', response.status);
       const data = await response.json();
+      console.log('[LibraryDB] Response data:', data);
+      
       if (response.ok) {
         libraryDbStatus = 'success';
+        console.log('[LibraryDB] Test successful');
       } else {
         libraryDbStatus = 'error';
         libraryDbError = data.error || 'Connection failed';
+        console.error('[LibraryDB] Test failed:', libraryDbError);
       }
     } catch (error) {
       libraryDbStatus = 'error';
       libraryDbError = 'Network error';
+      console.error('[LibraryDB] Network error:', error);
+      console.error('[LibraryDB] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   }
-
+  
   async function saveSettings() {
+    console.log('[Save] Starting save operation...');
     loading = true;
+    
     try {
       const formData = new FormData();
       formData.append('OPENAI_API_KEY', OPENAI_API_KEY);
@@ -145,45 +237,76 @@
       formData.append('LIBRARY_DB_NAME', LIBRARY_DB_NAME);
       formData.append('LIBRARY_DB_USER', LIBRARY_DB_USER);
       formData.append('LIBRARY_DB_PASSWORD', LIBRARY_DB_PASSWORD);
-      
+            
       if (ldapCertFile) {
+        console.log('[Save] Including LDAP certificate:', ldapCertFile.name);
         formData.append('LDAP_CERTIFICATE', ldapCertFile);
       }
-
+      
+      console.log('[Save] Form data keys:', Array.from(formData.keys()));
+      console.log('[Save] Sending POST to /api/admin/settings');
+      
       const response = await fetch('/api/admin/settings', {
         method: 'POST',
         body: formData
       });
-
+      
+      console.log('[Save] Response status:', response.status);
+      console.log('[Save] Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (response.ok) {
+        console.log('[Save] Save successful');
         alert('Settings saved successfully');
         await loadSettings(); // Re-load to ensure state is fresh
       } else {
-        const data = await response.json();
-        alert('Failed to save settings: ' + (data.error || 'Unknown error'));
+        const contentType = response.headers.get('content-type');
+        console.log('[Save] Error response content-type:', contentType);
+        
+        let errorMessage = 'Unknown error';
+        try {
+          const text = await response.text();
+          console.log('[Save] Error response text:', text);
+          const data = JSON.parse(text);
+          errorMessage = data.error || 'Unknown error';
+        } catch (parseError) {
+          console.error('[Save] Failed to parse error response:', parseError);
+          errorMessage = 'Invalid response from server';
+        }
+        
+        console.error('[Save] Save failed:', errorMessage);
+        alert('Failed to save settings: ' + errorMessage);
       }
     } catch (error) {
-      alert('Network error');
+      console.error('[Save] Network error:', error);
+      console.error('[Save] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      alert('Network error: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       loading = false;
+      console.log('[Save] Save operation completed');
     }
   }
-
+  
   function handleCertUpload(e: Event) {
     const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       ldapCertFile = input.files[0];
+      console.log('[CertUpload] File selected:', ldapCertFile.name, 'Size:', ldapCertFile.size);
     }
   }
-
+  
   $effect(() => {
+    console.log('[Effect] Component mounted, loading settings');
     loadSettings();
   });
 </script>
 
 <div class="settings-page">
   <h1>{i18n.t('dashboard.settings.title')}</h1>
-
+  
   <section class="settings-section">
     <h2>OpenAI API</h2>
     <div class="form-group">
@@ -213,7 +336,7 @@
       {/if}
     </div>
   </section>
-
+  
   <section class="settings-section">
     <h2>LDAP Settings</h2>
     <div class="form-group">
@@ -254,7 +377,7 @@
       <div class="status error">✗ {ldapError}</div>
     {/if}
   </section>
-
+  
   <section class="settings-section">
     <h2>Library Database (MSSQL)</h2>
     <div class="form-group">
@@ -298,7 +421,7 @@
       <div class="status error">✗ {libraryDbError}</div>
     {/if}
   </section>
-
+  
   <div class="actions">
     <button type="button" class="save-btn" onclick={saveSettings} disabled={loading}>
       {loading ? 'Saving...' : 'Save Settings'}

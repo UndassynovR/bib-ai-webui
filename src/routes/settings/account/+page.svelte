@@ -514,10 +514,6 @@
     gap: 0.5rem;
   }
 
-  .warning-icon {
-    color: #dc2626;
-  }
-
   .form-header h3 {
     margin: 0;
     font-size: 1rem;
