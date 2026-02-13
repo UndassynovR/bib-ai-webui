@@ -1,122 +1,135 @@
-// src/lib/i18n/translations/ru.ts
 export default {
+  common: {
+    cancel: 'Отмена',
+    save: 'Сохранить',
+    close: 'Закрыть',
+    delete: 'Удалить',
+    confirm: 'Подтвердить',
+  },
+
   chat: {
     newChat: 'Новый чат',
     loading: 'Загрузка диалога...',
-	emptyTitle: 'Ищете книгу?',
-	emptyHint: 'Напишите, что вам нужно, и я найду это в каталоге библиотеки университета.',
+    emptyTitle: 'Ищете книгу?',
+    emptyHint: 'Напишите, что вам нужно, и я найду это в каталоге библиотеки университета.',
     error: 'Произошла ошибка. Пожалуйста, попробуйте ещё раз.',
   },
 
   input: {
-	placeholder: 'Введите название, автора или тему...',
+    placeholder: 'Введите название, автора или тему...',
     send: 'Отправить сообщение',
     sendHint: 'Отправить (Enter)',
   },
-  
+
   nav: {
     chat: 'Интеллектуальный ассистент библиотеки университета',
     login: 'Войти',
   },
-  
+
   sidebar: {
     toggle: 'Переключить боковую панель',
     close: 'Закрыть боковую панель',
-  
     newChat: 'Новый чат',
     searchChats: 'Поиск чатов',
     bookmarks: 'Закладки',
-  
     yourChats: 'Ваши чаты',
-  
-	admin: "Панель управления",
+    admin: "Панель управления",
     settings: 'Настройки',
-  
     account: 'Аккаунт',
-	guest: 'Гость',
+    guest: 'Гость',
     accountSettings: 'Настройки аккаунта',
     guestAccount: 'Гостевой аккаунт',
   },
-  
- auth: {
+
+  auth: {
     login: 'Вход',
     signup: 'Регистрация',
-  
     loginTitle: 'С возвращением',
     signupTitle: 'Создать аккаунт',
-  
     loginHeading: 'Войти',
     signupHeading: 'Создать аккаунт',
-  
     loginSubtitle: 'Войдите, чтобы получить доступ к чатам с любого устройства',
     signupSubtitle: 'Зарегистрируйтесь, чтобы сохранить чаты навсегда',
-  
-   username: 'Имя пользователя',
+    username: 'Имя пользователя',
     email: 'Email',
     password: 'Пароль',
-  
     loginButton: 'Войти',
     signupButton: 'Создать аккаунт',
-  
     loggingIn: 'Вход...',
     signingUp: 'Создание аккаунта...',
     pleaseWait: 'Пожалуйста, подождите...',
-  
     alreadyHaveAccount: 'Уже есть аккаунт?',
     dontHaveAccount: 'Нет аккаунта?',
-  
     continueAsGuest: 'Продолжить как гость',
     orContinueWith: 'Или продолжить с',
-  
     invalidCredentials: 'Неверный email или пароль',
     emailAlreadyExists: 'Email уже зарегистрирован',
     guestUpgradeSuccess: 'Аккаунт обновлен! Ваши чаты сохранены.',
+	universityAccount: 'Университетский аккаунт',
+	personalAccount: 'Личный аккаунт',
+	universityHelper: 'Используйте свои учетные данные KazUTB',
+	personalHelper: 'Войдите с помощью вашей электронной почты',
+	usernamePlaceholder: 'имя пользователя или username@kaztbu.edu.kz',
+	unknownError: 'Что-то пошло не так',
   },
- 
+
   settings: {
     general: 'Общие',
     account: 'Аккаунт',
-  
     generalTitle: 'Общие настройки',
     appearance: 'Внешний вид',
     appearanceDescription: 'Выберите предпочитаемую тему',
     language: 'Язык',
     languageDescription: 'Выберите предпочитаемый язык',
-  
     themeSystem: 'Системная',
     themeLight: 'Светлая',
     themeDark: 'Темная',
-  
     languageAuto: 'Автоопределение',
     languageEnglish: 'English',
     languageRussian: 'Русский',
     languageKazakh: 'Қазақша',
-  
     themeSaved: 'Тема сохранена',
     languageSaved: 'Язык сохранен',
     saveFailed: 'Не удалось сохранить настройки',
-  
     accountTitle: 'Настройки аккаунта',
     accountEmail: 'Email',
     accountPassword: 'Пароль',
     accountName: 'Имя',
+    accountType: 'Тип аккаунта',
     changePassword: 'Изменить пароль',
+    updatePassword: 'Обновить пароль',
+    changing: 'Изменение...',
     deleteAccount: 'Удалить аккаунт',
-    deleteAccountWarning: 'Это действие нельзя отменить',
+    deleteWarningTitle: 'Это действие нельзя отменить',
+    deleteWarningText: 'Все ваши данные, включая историю чатов, будут безвозвратно удалены.',
+    deleteAccountWarning: 'Все ваши данные, включая историю чатов, будут безвозвратно удалены. Это действие необратимо.',
+    typeDeleteToConfirm: 'Введите УДАЛИТЬ для подтверждения',
+    typeDeleteInstruction: 'Введите',
+    toConfirm: 'для подтверждения',
+    permanentlyDelete: 'Безвозвратно удалить аккаунт',
+    deleting: 'Удаление...',
     upgradeAccount: 'Обновите до полного аккаунта, чтобы сохранять чаты',
-  
     accountInformation: 'Информация об аккаунте',
-  
+    guestAccount: 'Гостевой аккаунт',
+    universityAccount: 'Университетский аккаунт',
+    personalAccount: 'Личный аккаунт',
+    security: 'Безопасность',
+    securityDescription: 'Управление паролем и безопасностью аккаунта',
     accountActions: 'Действия с аккаунтом',
     accountActionsDescription: 'Управление сессией и доступом к аккаунту',
-  
     logout: 'Выйти',
     loggingOut: 'Выход...',
     notSet: 'Не указано',
-  
     currentPassword: 'Текущий пароль',
     newPassword: 'Новый пароль',
     confirmPassword: 'Подтвердите пароль',
+    passwordTooShort: 'Пароль должен содержать не менее 6 символов',
+    passwordsDoNotMatch: 'Пароли не совпадают',
+    passwordChanged: 'Пароль успешно изменен!',
+    networkError: 'Ошибка сети. Пожалуйста, попробуйте еще раз.',
+    dangerZone: 'Опасная зона',
+    dangerZoneDescription: 'Безвозвратное удаление аккаунта и всех связанных данных',
+    confirmDeletion: 'Подтвердить удаление аккаунта',
   },
 
   bookmarks: {
@@ -175,7 +188,6 @@ export default {
 
   dashboard: {
     title: 'Панель управления',
-    
     systemHealth: {
       title: 'Состояние системы',
       description: 'Статус сервера',
@@ -183,7 +195,7 @@ export default {
       apiPing: 'Пинг API',
       error: 'Ошибка',
     },
-    
+
     users: {
       title: 'Пользователи',
       description: 'Обзор учетных записей',
@@ -196,7 +208,7 @@ export default {
       thisWeek: 'На этой неделе',
       thisMonth: 'В этом месяце',
     },
-    
+
     conversations: {
       title: 'Чаты',
       description: 'Статистика чатов',
@@ -204,14 +216,14 @@ export default {
       today: 'Сегодня',
       thisWeek: 'На этой неделе',
     },
-    
+
     bookmarks: {
       title: 'Закладки',
       total: 'Всего',
     },
 
-	settings: {
-	  title: 'Настройки сервера',
-	},
+    settings: {
+      title: 'Настройки сервера',
+    },
   },
 };

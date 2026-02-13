@@ -78,6 +78,7 @@ export const handle: Handle = async ({ event, resolve }) => {
             name: user.name,
             is_guest: user.is_guest,
             role: user.role,
+            auth_type: user.auth_type as 'local' | 'ldap' // Include auth_type
           };
         }
       } else if (session) {
@@ -123,6 +124,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         email: null,
         name: null,
         is_guest: true,
+        auth_type: 'local' // Guests are technically local accounts
       };
     } catch (error) {
       console.error('Failed to create guest user:', error);

@@ -20,7 +20,8 @@ services:
   app:
     build: .
     container_name: chatapp
-#    volumes:
+    volumes:
+       - ./data/settings:/app/data/settings
 #      - .:/app
     working_dir: /app
     ports:

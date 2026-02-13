@@ -1,5 +1,13 @@
 // src/lib/i18n/translations/en.ts
 export default {
+  common: {
+    cancel: 'Cancel',
+    save: 'Save',
+    close: 'Close',
+    delete: 'Delete',
+    confirm: 'Confirm',
+  },
+
   chat: {
     newChat: 'New chat',
     loading: 'Loading conversation...',
@@ -71,52 +79,82 @@ export default {
     invalidCredentials: 'Invalid email or password',
     emailAlreadyExists: 'Email already registered',
     guestUpgradeSuccess: 'Account upgraded! Your chats have been preserved.',
+
+	universityAccount: 'University Account',
+	personalAccount: 'Personal Account',
+	universityHelper: 'Use your KazUTB credentials',
+	personalHelper: 'Login with your registered email',
+	usernamePlaceholder: 'username or username@kaztbu.edu.kz',
+	unknownError: 'Something went wrong',
   },
   
   settings: {
     general: 'General',
     account: 'Account',
-  
+    
     generalTitle: 'General Settings',
     appearance: 'Appearance',
     appearanceDescription: 'Choose your preferred theme',
     language: 'Language',
     languageDescription: 'Select your preferred language',
-  
+    
     themeSystem: 'System',
     themeLight: 'Light',
     themeDark: 'Dark',
-  
+    
     languageAuto: 'Auto-detect',
     languageEnglish: 'English',
     languageRussian: 'Russian',
     languageKazakh: 'Kazakh',
-  
+    
     themeSaved: 'Theme saved successfully',
     languageSaved: 'Language saved successfully',
     saveFailed: 'Failed to save settings',
-  
+    
     accountTitle: 'Account Settings',
     accountEmail: 'Email',
     accountPassword: 'Password',
     accountName: 'Name',
+    accountType: 'Account Type',
     changePassword: 'Change Password',
+    updatePassword: 'Update Password',
+    changing: 'Changing...',
     deleteAccount: 'Delete Account',
-    deleteAccountWarning: 'This action cannot be undone',
+    deleteWarningTitle: 'This action cannot be undone',
+    deleteWarningText: 'All your data including chat history will be permanently deleted.',
+    deleteAccountWarning: 'All your data including chat history will be permanently deleted. This action is irreversible.',
+    typeDeleteToConfirm: 'Type DELETE to confirm',
+    typeDeleteInstruction: 'Type',
+    toConfirm: 'to confirm',
+    permanentlyDelete: 'Permanently Delete Account',
+    deleting: 'Deleting...',
     upgradeAccount: 'Upgrade to a full account to save your chats',
-  
+    
     accountInformation: 'Account Information',
-  
+    guestAccount: 'Guest',
+    universityAccount: 'University Account',
+    personalAccount: 'Personal Account',
+    security: 'Security',
+    securityDescription: 'Manage your password and account security',
+    
     accountActions: 'Account Actions',
     accountActionsDescription: 'Manage your session and account access',
-  
+    
     logout: 'Log Out',
     loggingOut: 'Logging out...',
     notSet: 'Not set',
-  
+    
     currentPassword: 'Current Password',
     newPassword: 'New Password',
-    confirmPassword: 'Confirm Password',
+    confirmPassword: 'Confirm New Password',
+    passwordTooShort: 'Password must be at least 6 characters',
+    passwordsDoNotMatch: 'Passwords do not match',
+    passwordChanged: 'Password changed successfully!',
+    networkError: 'Network error. Please try again.',
+    
+    dangerZone: 'Danger Zone',
+    dangerZoneDescription: 'Permanently delete your account and all associated data',
+    confirmDeletion: 'Confirm Account Deletion',
   },
 
   bookmarks: {

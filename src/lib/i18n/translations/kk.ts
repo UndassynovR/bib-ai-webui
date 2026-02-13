@@ -1,10 +1,12 @@
-// src/lib/i18n/translations/kk.ts
 export default {
-  nav: {
-    chat: 'Университет кітапханасының ақылды көмекшісі',
-    login: 'Кіру',
+  common: {
+    cancel: 'Болдырмау',
+    save: 'Сақтау',
+    close: 'Жабу',
+    delete: 'Жою',
+    confirm: 'Растау',
   },
-  
+
   chat: {
     newChat: 'Жаңа сөйлесу',
     loading: 'Сөйлесу жүктелуде...',
@@ -12,113 +14,124 @@ export default {
     emptyHint: 'Не керек екенін жазыңыз, мен оны университет кітапханасының каталогынан табамын.',
     error: 'Қате пайда болды. Қайталап көріңіз.',
   },
-  
+
   input: {
     placeholder: 'Атауын, авторын немесе тақырыбын енгізіңіз...',
     send: 'Жіберу',
     sendHint: 'Жіберу (Enter)',
   },
-  
+
+  nav: {
+    chat: 'Университет кітапханасының ақылды көмекшісі',
+    login: 'Кіру',
+  },
+
   sidebar: {
     toggle: 'Бүйір панелді ауыстыру',
     close: 'Бүйір панелді жабу',
-    
     newChat: 'Жаңа сөйлесу',
     searchChats: 'Сөйлесулерді іздеу',
     bookmarks: 'Бетбелгілер',
-    
     yourChats: 'Сөйлесулеріңіз',
-    
-	admin: "Бақылау тақтасы",
+    admin: "Бақылау тақтасы",
     settings: 'Баптаулар',
-    
     account: 'Есептік жазба',
-	guest: 'Қонақ',
+    guest: 'Қонақ',
     accountSettings: 'Есептік жазба баптаулары',
     guestAccount: 'Қонақ есептік жазбасы',
   },
-  
+
   auth: {
     login: 'Кіру',
     signup: 'Тіркелу',
-    
     loginTitle: 'Қош келдіңіз',
     signupTitle: 'Есептік жазба жасау',
-    
     loginHeading: 'Кіру',
     signupHeading: 'Есептік жазба жасау',
-    
     loginSubtitle: 'Сөйлесулерге кез келген құрылғыдан кіру үшін жүйеге кіріңіз',
     signupSubtitle: 'Сөйлесулерді сақтау үшін тіркеліңіз',
-    
-	username: 'Пайдаланушы аты',
+    username: 'Пайдаланушы аты',
     email: 'Email',
     password: 'Құпия сөз',
-    
     loginButton: 'Кіру',
     signupButton: 'Есептік жазба жасау',
-    
     loggingIn: 'Кіру...',
     signingUp: 'Есептік жазба жасау...',
     pleaseWait: 'Күте тұрыңыз...',
-    
     alreadyHaveAccount: 'Есептік жазба бар ма?',
     dontHaveAccount: 'Есептік жазба жоқ па?',
-    
     continueAsGuest: 'Қонақ ретінде жалғастыру',
     orContinueWith: 'Немесе осымен жалғастыру',
-    
     invalidCredentials: 'Email немесе құпия сөз қате',
     emailAlreadyExists: 'Email бұрыннан тіркелген',
     guestUpgradeSuccess: 'Есептік жазба жаңартылды! Сөйлесулеріңіз сақталды.',
+	universityAccount: 'Университет есептік жазбасы',
+	personalAccount: 'Жеке есептік жазба',
+	universityHelper: 'KazUTB тіркелгі деректерін пайдаланыңыз',
+	personalHelper: 'Тіркелген электрондық поштаңызбен кіріңіз',
+	usernamePlaceholder: 'пайдаланушы аты немесе username@kaztbu.edu.kz',
+	unknownError: 'Бірдеңе дұрыс болмады',
   },
-  
+
   settings: {
     general: 'Жалпы',
     account: 'Есептік жазба',
-    
     generalTitle: 'Жалпы баптаулар',
     appearance: 'Сыртқы түрі',
     appearanceDescription: 'Қалаған тақырыпты таңдаңыз',
     language: 'Тіл',
     languageDescription: 'Қалаған тілді таңдаңыз',
-    
     themeSystem: 'Жүйелік',
     themeLight: 'Жарық',
     themeDark: 'Қараңғы',
-    
     languageAuto: 'Автоанықтау',
     languageEnglish: 'English',
     languageRussian: 'Русский',
     languageKazakh: 'Қазақша',
-    
     themeSaved: 'Тақырып сақталды',
     languageSaved: 'Тіл сақталды',
     saveFailed: 'Баптауларды сақтау сәтсіз аяқталды',
-    
     accountTitle: 'Есептік жазба баптаулары',
     accountEmail: 'Email',
     accountPassword: 'Құпия сөз',
     accountName: 'Аты',
+    accountType: 'Есептік жазба түрі',
     changePassword: 'Құпия сөзді өзгерту',
+    updatePassword: 'Құпия сөзді жаңарту',
+    changing: 'Өзгертілуде...',
     deleteAccount: 'Есептік жазбаны жою',
-    deleteAccountWarning: 'Бұл әрекетті болдырмауға болмайды',
+    deleteWarningTitle: 'Бұл әрекетті болдырмауға болмайды',
+    deleteWarningText: 'Барлық деректеріңіз, соның ішінде чат тарихы біржола жойылады.',
+    deleteAccountWarning: 'Барлық деректеріңіз, соның ішінде чат тарихы біржола жойылады. Бұл әрекет қайтарымсыз.',
+    typeDeleteToConfirm: 'Растау үшін ЖОЮ деп теріңіз',
+    typeDeleteInstruction: 'Растау үшін',
+    toConfirm: 'деп теріңіз',
+    permanentlyDelete: 'Есептік жазбаны біржола жою',
+    deleting: 'Жойылуда...',
     upgradeAccount: 'Сөйлесулерді сақтау үшін толық есептік жазбаға жаңартыңыз',
-    
     accountInformation: 'Есептік жазба туралы ақпарат',
-    
+    guestAccount: 'Қонақ есептік жазбасы',
+    universityAccount: 'Университет есептік жазбасы',
+    personalAccount: 'Жеке есептік жазба',
+    security: 'Қауіпсіздік',
+    securityDescription: 'Құпия сөз бен есептік жазба қауіпсіздігін басқару',
     accountActions: 'Есептік жазба әрекеттері',
     accountActionsDescription: 'Сеанс пен есептік жазбаға қол жетімділікті басқару',
-    
     logout: 'Шығу',
     loggingOut: 'Шығу...',
     notSet: 'Көрсетілмеген',
-    
     currentPassword: 'Ағымдағы құпия сөз',
     newPassword: 'Жаңа құпия сөз',
     confirmPassword: 'Құпия сөзді растау',
+    passwordTooShort: 'Құпия сөз кемінде 6 таңбадан тұруы керек',
+    passwordsDoNotMatch: 'Құпия сөздер сәйкес келмейді',
+    passwordChanged: 'Құпия сөз сәтті өзгертілді!',
+    networkError: 'Желілік қате. Қайталап көріңіз.',
+    dangerZone: 'Қауіпті аймақ',
+    dangerZoneDescription: 'Есептік жазбаны және барлық байланысты деректерді біржола жою',
+    confirmDeletion: 'Есептік жазбаны жоюды растау',
   },
-  
+
   bookmarks: {
     title: 'Менің бетбелгілерім',
     emptySubtitle: 'Әзірше сақталған кітаптарыңыз жоқ',
@@ -145,7 +158,7 @@ export default {
     publicationPlace: 'Шығарылған жері',
     keywords: 'Кілт сөздер',
   },
-  
+
   chatSearch: {
     title: 'Сөйлесулерде іздеу',
     subtitle: 'Сөйлесулеріңізден хабарларды табыңыз',
@@ -175,7 +188,6 @@ export default {
 
   dashboard: {
     title: 'Басқару тақтасы',
-    
     systemHealth: {
       title: 'Жүйе жағдайы',
       description: 'Сервер күйі',
@@ -183,7 +195,7 @@ export default {
       apiPing: 'API пингі',
       error: 'Қате',
     },
-    
+
     users: {
       title: 'Пайдаланушылар',
       description: 'Тіркелгілерге шолу',
@@ -196,7 +208,7 @@ export default {
       thisWeek: 'Осы аптада',
       thisMonth: 'Осы айда',
     },
-    
+
     conversations: {
       title: 'Әңгімелер',
       description: 'Чат статистикасы',
@@ -204,14 +216,14 @@ export default {
       today: 'Бүгін',
       thisWeek: 'Осы аптада',
     },
-    
+
     bookmarks: {
       title: 'Бетбелгілер',
       total: 'Барлығы',
     },
 
-	settings: {
-	  title: 'Сервер параметрлері',
-	},
+    settings: {
+      title: 'Сервер параметрлері',
+    },
   },
 };

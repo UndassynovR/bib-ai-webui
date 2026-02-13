@@ -146,7 +146,7 @@
                 error = '';
               }}
             >
-              University Account
+              {i18n.t('auth.universityAccount')}
             </button>
             <button
               type="button"
@@ -156,27 +156,27 @@
                 error = '';
               }}
             >
-              Personal Account
+              {i18n.t('auth.personalAccount')}
             </button>
           </div>
 
           {#if loginType === 'ldap'}
-            <p class="helper-text">Use your KazUTB credentials</p>
+            <p class="helper-text">{i18n.t('auth.universityHelper')}</p>
             <div class="form-group">
               <label for="username">{i18n.t('auth.username')}</label>
               <input
                 id="username"
                 type="text"
                 bind:value={username}
-                placeholder={i18n.t('auth.username') || 'username or username@kaztbu.edu.kz'}
+                placeholder={i18n.t('auth.username')}
                 required
                 disabled={loading}
               />
             </div>
           {:else}
-            <p class="helper-text">Login with your registered email</p>
+            <p class="helper-text">{i18n.t('auth.personalHelper')}</p>
             <div class="form-group">
-              <label for="email">{i18n.t('auth.email') || 'Email'}</label>
+              <label for="email">{i18n.t('auth.email')}</label>
               <input
                 id="email"
                 type="email"
@@ -189,7 +189,7 @@
           {/if}
         {:else}
           <div class="form-group">
-            <label for="email">{i18n.t('auth.email') || 'Email'}</label>
+            <label for="email">{i18n.t('auth.email')}</label>
             <input
               id="email"
               type="email"

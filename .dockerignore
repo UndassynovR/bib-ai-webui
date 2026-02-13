@@ -13,7 +13,7 @@ dist
 # .env.*
 
 # db / runtime data
-data
+data/postgres
 *.log
 
 # OS
