@@ -17,6 +17,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { PDFParse } from 'pdf-parse';
 
+const config = await getAppConfig();
 
 interface Book {
   author?: string;
