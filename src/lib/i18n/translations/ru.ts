@@ -222,6 +222,11 @@ export default {
       total: 'Всего',
     },
 
+    books: {
+      title: 'Книги',
+      total: 'Всего',
+    },
+
     settings: {
       title: 'Настройки сервера',
     },

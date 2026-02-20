@@ -248,8 +248,13 @@ export default {
       total: 'Total',
     },
 
-	settings: {
-	  title: 'Server settings',
-	},
+    books: {
+      title: 'Books',
+      total: 'Total',
+    },
+
+    settings: {
+      title: 'Server settings',
+    },
   },
 };

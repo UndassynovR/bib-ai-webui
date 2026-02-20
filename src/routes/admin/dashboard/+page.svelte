@@ -136,6 +136,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Books -->
+  <div class="dashboard-section">
+    <h2>{i18n.t('dashboard.books.title')}</h2>
+    <div class="stats-row">
+      <div class="stat">
+        <span class="label">{i18n.t('dashboard.books.total')}</span>
+        <span class="value">{stats.books.total}</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>

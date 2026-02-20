@@ -2,6 +2,8 @@
 import type { PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db/pg';
 import { users, conversations, bookmarks } from '$lib/server/db/pg/schema';
+import { getMssqlDb } from '$lib/server/db/mssql';
+const mssqlDb = getMssqlDb();
 import { eq, sql, and, gte } from 'drizzle-orm';
 
 const db = getDb();
@@ -27,6 +29,16 @@ export const load: PageServerLoad = async () => {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+	const booksNumberResult = await mssqlDb.execute(`
+      SELECT SUM(p.rows) AS row_count
+      FROM sys.partitions p
+      JOIN sys.tables t ON p.object_id = t.object_id
+      WHERE t.name = 'DOC'
+        AND p.index_id IN (0,1);
+    `);
+
+    const booksNumber = booksNumberResult.recordset[0].row_count;
 
     // Users - Total counts
     const totalUsers = await db.select({ total: sql<number>`count(*)::int` }).from(users);
@@ -127,6 +139,9 @@ export const load: PageServerLoad = async () => {
         bookmarks: {
           total: totalBookmarks[0]?.total ?? 0,
         },
+		books: {
+		  total: booksNumber,
+		},
       },
     };
   } catch (err) {

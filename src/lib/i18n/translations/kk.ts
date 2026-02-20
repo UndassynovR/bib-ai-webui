@@ -222,6 +222,11 @@ export default {
       total: 'Барлығы',
     },
 
+    books: {
+      title: 'Кітаптар',
+      total: 'Барлығы',
+    },
+
     settings: {
       title: 'Сервер параметрлері',
     },
