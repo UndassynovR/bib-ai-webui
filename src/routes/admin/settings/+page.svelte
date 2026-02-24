@@ -279,7 +279,7 @@
     </div>
     {#if libraryDbUrl}
       <div class="connection-string">
-        <label>Connection String:</label>
+        <p>Connection String:</p>
         <code>{libraryDbUrl}</code>
       </div>
     {/if}
@@ -415,7 +415,7 @@
     background: var(--bg-tertiary);
     border-radius: 6px;
   }
-  .connection-string label {
+  .connection-string p {
     margin-bottom: 0.25rem;
     font-size: 0.75rem;
     text-transform: uppercase;
