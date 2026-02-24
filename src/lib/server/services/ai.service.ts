@@ -1,7 +1,7 @@
 import { getAppConfig } from '$lib/server/config';
 import { ChatOpenAI } from "@langchain/openai";
 import { createAgent } from "langchain";
-import { searchBooksTool } from "$lib/server/services/tools/searchBooks";
+import { searchBooksTool } from "$lib/server/tools/searchBooksTool";
 
 const config = await getAppConfig();
 
