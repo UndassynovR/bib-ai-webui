@@ -1,6 +1,4 @@
 /**
- * lib/server/tools/searchBooksTool.ts  (drop-in replacement)
- *
  * Hybrid RAG search:
  *   1. Embed the user's query with OpenAI text-embedding-3-small
  *   2. Vector search → top 50 semantically similar books

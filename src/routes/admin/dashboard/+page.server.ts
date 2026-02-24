@@ -1,15 +1,14 @@
 // src/routes/admin/dashboard/+page.server.ts
 import type { PageServerLoad } from './$types';
+import { serverStartTime } from '$lib/server/runtime';
 import { getDb } from '$lib/server/db/pg';
 import { users, conversations, bookmarks } from '$lib/server/db/pg/schema';
 import { getMssqlDb } from '$lib/server/db/mssql';
-const mssqlDb = getMssqlDb();
 import { eq, sql, and, gte } from 'drizzle-orm';
 
+const mssqlDb = getMssqlDb();
 const db = getDb();
 
-// Store server start time
-const serverStartTime = Date.now();
 
 async function getApiPing(): Promise<number> {
   try {
@@ -112,7 +111,9 @@ export const load: PageServerLoad = async () => {
     const apiPing = await getApiPing();
 
     // Calculate uptime in seconds
-    const uptimeSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+    const uptimeSeconds = Math.floor(
+    (Date.now() - serverStartTime) / 1000
+    );
 
     return {
       stats: {

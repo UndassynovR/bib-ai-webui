@@ -1,6 +1,4 @@
 /**
- * lib/server/rag/vectorStore.ts
- *
  * Loads all book embeddings from MSSQL into memory and performs
  * cosine similarity search. Refreshes automatically every 5 minutes
  * so new embeddings produced by the background job become available.

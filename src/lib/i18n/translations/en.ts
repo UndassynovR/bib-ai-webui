@@ -1,4 +1,3 @@
-// src/lib/i18n/translations/en.ts
 export default {
   common: {
     cancel: 'Cancel',

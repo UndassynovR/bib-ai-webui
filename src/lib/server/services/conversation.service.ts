@@ -1,4 +1,3 @@
-// src/lib/server/services/conversation.service.ts
 import { getDb } from '$lib/server/db/pg';
 const db = getDb();
 import { conversations } from "$lib/server/db/pg/schema";

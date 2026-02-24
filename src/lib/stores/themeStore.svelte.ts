@@ -1,4 +1,3 @@
-// src/lib/stores/themeStore.svelte.ts
 import { browser } from '$app/environment';
 
 type Theme = 'light' | 'dark' | 'system';

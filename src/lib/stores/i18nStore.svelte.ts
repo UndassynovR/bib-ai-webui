@@ -1,4 +1,3 @@
-// src/lib/stores/i18nStore.svelte.ts
 import { browser } from '$app/environment';
 import { translations, getNestedValue, interpolate, type Locale } from '$lib/i18n';
 

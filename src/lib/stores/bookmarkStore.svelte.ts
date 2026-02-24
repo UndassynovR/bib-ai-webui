@@ -1,4 +1,3 @@
-// src/lib/stores/bookmarkStore.svelte.ts
 import { browser } from '$app/environment';
 
 let state = $state({

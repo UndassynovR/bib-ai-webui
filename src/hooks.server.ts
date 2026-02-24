@@ -5,6 +5,7 @@ import { users, sessions } from '$lib/server/db/pg/schema';
 import { eq } from 'drizzle-orm';
 import { runEmbeddingJob } from '$lib/server/rag/embedBooks';
 import { invalidateVectorStore } from '$lib/server/rag/vectorStore';
+import '$lib/server/runtime';
 
 const db = getDb();
 

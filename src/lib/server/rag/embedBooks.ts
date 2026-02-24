@@ -1,7 +1,3 @@
-/**
- * lib/server/rag/embedBooks.ts
- */
-
 import crypto from 'crypto';
 import { sql } from 'drizzle-orm';
 import { getMssqlDb } from '$lib/server/db/mssql';
@@ -17,7 +13,7 @@ function buildBookText(row: Record<string, any>): string {
     row.keywords,
     row.publisher,
     row.year ? `Year: ${row.year}` : null,
-  ].filter(Boolean).join(' | ');
+  ].filter(Boolean).join(' | ').trim();
 }
 
 function sha256(text: string): string {
@@ -29,7 +25,6 @@ function toRows(result: any): Record<string, any>[] {
   if (Array.isArray(result)) return result;
   if (Array.isArray(result?.recordset)) return result.recordset;
   if (Array.isArray(result?.rows)) return result.rows;
-  // Log the actual shape once so we can see it
   console.log('[EmbedJob] Unexpected db.execute result shape:', JSON.stringify(result)?.slice(0, 300));
   return [];
 }
@@ -74,7 +69,15 @@ export async function runEmbeddingJob(): Promise<void> {
     return currentHash !== row.content_hash;
   });
 
-  const booksToEmbed = [...newBooks, ...changedBooks];
+  // Filter out books with no embeddable text — OpenAI rejects empty strings
+  const booksToEmbed = [...newBooks, ...changedBooks].filter(row => {
+    const text = buildBookText(row);
+    if (!text) {
+      console.log(`[EmbedJob] Skipping DOC_ID ${row.DOC_ID} — no embeddable text.`);
+      return false;
+    }
+    return true;
+  });
 
   if (booksToEmbed.length === 0) {
     console.log('[EmbedJob] All books up to date. Nothing to do.');
@@ -86,11 +89,18 @@ export async function runEmbeddingJob(): Promise<void> {
   for (let i = 0; i < booksToEmbed.length; i += BATCH_SIZE) {
     const batch = booksToEmbed.slice(i, i + BATCH_SIZE);
     const texts = batch.map(buildBookText);
-    const embeddings = await getEmbeddings(texts);
 
-    for (let j = 0; j < batch.length; j++) {
-      const docId: number = batch[j].DOC_ID;
-      const hash: string = sha256(texts[j]);
+    // Extra safety: ensure no empty strings sneak into the batch
+    const safeBatch = batch.filter((_, idx) => texts[idx].length > 0);
+    const safeTexts = safeBatch.map(buildBookText);
+
+    if (safeTexts.length === 0) continue;
+
+    const embeddings = await getEmbeddings(safeTexts);
+
+    for (let j = 0; j < safeBatch.length; j++) {
+      const docId: number = safeBatch[j].DOC_ID;
+      const hash: string = sha256(safeTexts[j]);
       const embeddingJson: string = JSON.stringify(embeddings[j]);
 
       await db.execute(sql`

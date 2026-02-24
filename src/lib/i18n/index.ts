@@ -1,4 +1,3 @@
-// src/lib/i18n/index.ts
 import en from './translations/en';
 import ru from './translations/ru';
 import kk from './translations/kk';

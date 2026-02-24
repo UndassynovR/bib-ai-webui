@@ -1,6 +1,4 @@
 /**
- * lib/server/rag/openaiEmbeddings.ts
- *
  * Thin wrapper around OpenAI embeddings with a simple in-process cache
  * so repeated identical queries don't cost extra API calls.
  */
