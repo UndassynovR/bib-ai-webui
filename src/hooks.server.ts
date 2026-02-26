@@ -26,7 +26,7 @@ async function ensureAdminExists() {
       .limit(1);
 
     if (!existing) {
-      console.log('👤 Creating default admin account...');
+      console.log('Creating default admin account...');
 
       const bcrypt = await import('bcrypt');
       const passwordHash = await bcrypt.hash('admin123', 10);
@@ -40,15 +40,15 @@ async function ensureAdminExists() {
         role: 'admin',
       });
 
-      console.log('✅ Admin account created successfully!');
-      console.log(`   Email: ${adminEmail}`);
-      console.log(`   Password: admin123`);
-      console.log('   ⚠️  IMPORTANT: Change this password after first login!');
+      console.log('Admin account created successfully!');
+      console.log(`Email: ${adminEmail}`);
+      console.log(`Password: admin123`);
+      console.log('IMPORTANT: Change this password after first login!');
     }
 
     adminCheckDone = true;
   } catch (err) {
-    console.error('❌ Error checking/creating admin account:', err);
+    console.error('Error checking/creating admin account:', err);
   }
 }
 
