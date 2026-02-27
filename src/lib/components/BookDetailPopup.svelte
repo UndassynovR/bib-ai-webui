@@ -14,6 +14,7 @@
 		Bookmark,
 		Languages,
 		Layers,
+		Search,
 	} from "@lucide/svelte";
 	import { bookmarkStore } from "$lib/stores/bookmarkStore.svelte";
 
@@ -54,10 +55,7 @@
 	async function handleBookmarkClick(docId: number, event: MouseEvent) {
 		event.preventDefault();
 		event.stopPropagation();
-		console.log("Before toggle:", bookmarkStore.isBookmarked(docId));
 		await bookmarkStore.toggleBookmark(docId);
-		console.log("After toggle:", bookmarkStore.isBookmarked(docId));
-		// Force re-check
 		bookmarkedIds = bookmarkStore.bookmarks;
 	}
 
@@ -65,6 +63,32 @@
 		if (e.key === "Escape") {
 			onClose();
 		}
+	}
+
+	// Map each field to a human-readable search message and filter object
+	function searchByField(field: string, value: any) {
+		const fieldMap: Record<string, { message: string }> = {
+			year: { message: `Книги ${value} года издания` },
+			publisher: { message: `Книги издательства "${value}"` },
+			publication_place: { message: `Книги, изданные в "${value}"` },
+			isbn: { message: `ISBN: ${value}` },
+			text_language_code: {
+				message: `Книги на языке: ${languages[value] ?? value}`,
+			},
+			volume: { message: `Книги с объёмом ${value} страниц` },
+			keyword: { message: `Книги по теме: "${value}"` },
+		};
+
+		const mapped = fieldMap[field];
+		if (!mapped) return;
+
+		window.dispatchEvent(
+			new CustomEvent("search-filter", {
+				detail: { message: mapped.message },
+			}),
+		);
+
+		onClose();
 	}
 </script>
 
@@ -165,27 +189,46 @@
 				<h3 class="section-title-secondary">Информация о книге</h3>
 				<div class="details-grid">
 					{#if book.year}
-						<div class="detail-item">
+						<button
+							class="detail-item detail-item--clickable"
+							onclick={() => searchByField("year", book.year)}
+							title="Найти книги {book.year} года"
+						>
 							<Calendar size={20} />
 							<div>
 								<p class="detail-label">Год издания</p>
 								<p class="detail-value">{book.year}</p>
 							</div>
-						</div>
+							<Search size={14} class="search-hint" />
+						</button>
 					{/if}
 
 					{#if book.publisher}
-						<div class="detail-item">
+						<button
+							class="detail-item detail-item--clickable"
+							onclick={() =>
+								searchByField("publisher", book.publisher)}
+							title="Найти книги издательства «{book.publisher}»"
+						>
 							<Building size={20} />
 							<div>
 								<p class="detail-label">Издательство</p>
 								<p class="detail-value">{book.publisher}</p>
 							</div>
-						</div>
+							<Search size={14} class="search-hint" />
+						</button>
 					{/if}
 
 					{#if book.publication_place}
-						<div class="detail-item">
+						<button
+							class="detail-item detail-item--clickable"
+							onclick={() =>
+								searchByField(
+									"publication_place",
+									book.publication_place,
+								)}
+							title="Найти книги из «{book.publication_place}»"
+						>
 							<MapPin size={20} />
 							<div>
 								<p class="detail-label">Место издания</p>
@@ -193,21 +236,35 @@
 									{book.publication_place}
 								</p>
 							</div>
-						</div>
+							<Search size={14} class="search-hint" />
+						</button>
 					{/if}
 
 					{#if book.isbn}
-						<div class="detail-item">
+						<button
+							class="detail-item detail-item--clickable"
+							onclick={() => searchByField("isbn", book.isbn)}
+							title="Найти по ISBN"
+						>
 							<Hash size={20} />
 							<div>
 								<p class="detail-label">ISBN</p>
 								<p class="detail-value">{book.isbn}</p>
 							</div>
-						</div>
+							<Search size={14} class="search-hint" />
+						</button>
 					{/if}
 
 					{#if book.text_language_code}
-						<div class="detail-item">
+						<button
+							class="detail-item detail-item--clickable"
+							onclick={() =>
+								searchByField(
+									"text_language_code",
+									book.text_language_code,
+								)}
+							title="Найти книги на этом языке"
+						>
 							<Languages size={20} />
 							<div>
 								<p class="detail-label">Язык</p>
@@ -216,7 +273,8 @@
 										book.text_language_code}
 								</p>
 							</div>
-						</div>
+							<Search size={14} class="search-hint" />
+						</button>
 					{/if}
 
 					{#if book.volume}
@@ -224,9 +282,7 @@
 							<Layers size={20} />
 							<div>
 								<p class="detail-label">Объем</p>
-								<p class="detail-value">
-									{book.volume}
-								</p>
+								<p class="detail-value">{book.volume}</p>
 							</div>
 						</div>
 					{/if}
@@ -238,9 +294,17 @@
 								<p class="detail-label">Ключевые слова</p>
 								<div class="keywords-container">
 									{#each book.keywords.split(",") as keyword}
-										<span class="keyword-tag">
+										<button
+											class="keyword-tag keyword-tag--clickable"
+											onclick={() =>
+												searchByField(
+													"keyword",
+													keyword.trim(),
+												)}
+											title="Найти книги по теме «{keyword.trim()}»"
+										>
 											{keyword.trim()}
-										</span>
+										</button>
 									{/each}
 								</div>
 							</div>
@@ -492,5 +556,51 @@
 
 	:global(body:has(.popup-backdrop)) {
 		overflow: hidden;
+	}
+
+	.detail-item--clickable {
+		all: unset;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		cursor: pointer;
+		border-radius: 0.5rem;
+		padding: 0.5rem;
+		margin: -0.5rem;
+		transition: background-color 0.15s ease;
+		width: 100%;
+		box-sizing: border-box;
+		position: relative;
+	}
+
+	.detail-item--clickable:hover {
+		background-color: color-mix(in srgb, currentColor 8%, transparent);
+	}
+
+	.detail-item--clickable:hover :global(.search-hint) {
+		opacity: 1;
+	}
+
+	:global(.search-hint) {
+		opacity: 0;
+		margin-left: auto;
+		flex-shrink: 0;
+		transition: opacity 0.15s ease;
+		color: currentColor;
+	}
+
+	.keyword-tag--clickable {
+		all: unset;
+		cursor: pointer;
+		/* inherit your existing .keyword-tag styles */
+		display: inline-block;
+		border-radius: 9999px;
+		padding: 0.2rem 0.6rem;
+		font-size: 0.8rem;
+		transition: filter 0.15s ease;
+	}
+
+	.keyword-tag--clickable:hover {
+		filter: brightness(0.85);
 	}
 </style>
