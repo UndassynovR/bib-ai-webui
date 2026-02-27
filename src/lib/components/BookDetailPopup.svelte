@@ -201,7 +201,32 @@
 							<Hash size={20} />
 							<div>
 								<p class="detail-label">ISBN</p>
-								<p class="detail-value isbn">{book.isbn}</p>
+								<p class="detail-value">{book.isbn}</p>
+							</div>
+						</div>
+					{/if}
+
+					{#if book.text_language_code}
+						<div class="detail-item">
+							<Languages size={20} />
+							<div>
+								<p class="detail-label">Язык</p>
+								<p class="detail-value">
+									{languages[book.text_language_code] ??
+										book.text_language_code}
+								</p>
+							</div>
+						</div>
+					{/if}
+
+					{#if book.volume}
+						<div class="detail-item">
+							<Layers size={20} />
+							<div>
+								<p class="detail-label">Объем</p>
+								<p class="detail-value">
+									{book.volume}
+								</p>
 							</div>
 						</div>
 					{/if}
@@ -218,31 +243,6 @@
 										</span>
 									{/each}
 								</div>
-							</div>
-						</div>
-					{/if}
-
-					{#if book.text_language_code}
-						<div class="detail-item keywords-item">
-							<Languages size={20} />
-							<div>
-								<p class="detail-label">Язык</p>
-								<p class="detail-value">
-									{languages[book.text_language_code] ??
-										book.text_language_code}
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					{#if book.volume}
-						<div class="detail-item keywords-item">
-							<Layers size={20} />
-							<div>
-								<p class="detail-label">Объем</p>
-								<p class="detail-value">
-									{book.volume}
-								</p>
 							</div>
 						</div>
 					{/if}
@@ -472,10 +472,6 @@
 	.detail-value {
 		color: var(--text-primary);
 		font-weight: 500;
-	}
-
-	.detail-value.isbn {
-		font-family: monospace;
 	}
 
 	.keywords-container {

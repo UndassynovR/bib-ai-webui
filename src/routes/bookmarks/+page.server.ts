@@ -35,13 +35,16 @@ export const load: PageServerLoad = async ({ locals }) => {
       .select({
         DOC_ID: DOC_VIEW.DOC_ID,
         title: DOC_VIEW.title,
+		title_continuation: DOC_VIEW.title_continuation,
         author: DOC_VIEW.author,
         other_authors: DOC_VIEW.other_authors,
         year: DOC_VIEW.year,
         publisher: DOC_VIEW.publisher,
+        publication_place: DOC_VIEW.publication_place,
+        isbn: DOC_VIEW.isbn,
+        keywords: DOC_VIEW.keywords,
+        text_language_code: DOC_VIEW.text_language_code,
         volume: DOC_VIEW.volume,
-        quantity: DOC_VIEW.quantity,
-        cover_link: DOC_VIEW.cover_link,
       })
       .from(DOC_VIEW)
       .where(inArray(DOC_VIEW.DOC_ID, docIds));
